@@ -1,9 +1,9 @@
 {
   "train": {
       image_size: 224,
-      batch_size: 8,
+      batch_size: 512,
       shuffle_size: 200000,
-      data_path: '/home/john/data/imagenet_train_shards',
+      data_path: '/root/fused_bucket/data/imagenet_train_shards',
       seed: 43,
       total_epoch: 90,
       model_path: 'check_points/Diffusion'
@@ -12,9 +12,9 @@
     target: modules.state_utils.MyTrainState,
     Input_Shape: [ [ 1,224,224,3 ], ],
     Model: {
-      target: model2.ResNet50,
+      target: model.ResNet,
       params: {
-          num_classes: 1000
+        num_classes: 1000
       }
     },
     Optimizer: {
