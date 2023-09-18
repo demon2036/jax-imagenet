@@ -1,0 +1,29 @@
+{
+  "train": {
+      image_size: 224,
+      batch_size: 8,
+      data_path: '/home/john/data/imagenet_train_shards',
+      seed: 43,
+      total_epoch: 90,
+      model_path: 'check_points/Diffusion'
+  },
+  "State": {
+    target: modules.state_utils.MyTrainState,
+    Input_Shape: [ [ 1,224,224,3 ], ],
+    Model: {
+      target: model.ResNet,
+      params: {
+
+      }
+    },
+    Optimizer: {
+      target: optax.adamw,
+      params: {
+        learning_rate: 2.0e-4,
+        b1: 0.9,
+        b2: 0.99
+      }
+    },
+  },
+
+}
