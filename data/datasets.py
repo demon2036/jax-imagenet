@@ -38,7 +38,7 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
                           drop_last=True,shuffle_size=10000):
     shards_urls = [str(path) for path in Path(dataset_root).glob('*')]
 
-    print(shards_urls)
+    # print(shards_urls)
     dataset = wds.WebDataset(shards_urls, shardshuffle=True).shuffle(shuffle_size).decode('rgb').to_tuple('jpg',
                                                                                                    'cls').map_tuple(
         transfer_data)

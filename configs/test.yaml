@@ -13,7 +13,7 @@
     Model: {
       target: model.ResNet,
       params: {
-
+        out_channels: [64, 256, 512, 1024]
       }
     },
     Optimizer: {
