@@ -1,7 +1,7 @@
 {
   "train": {
       image_size: 224,
-      batch_size: 512,
+      batch_size: 256,
       shuffle_size: 200000,
       data_path: '/root/fused_bucket/data/imagenet_train_shards',
       seed: 43,
@@ -18,12 +18,14 @@
       }
     },
     Optimizer: {
-      target: optax.adamw,
+      target: optax.sgd,
       params: {
-        learning_rate: 1.0e-3,
-        b1: 0.9,
-        b2: 0.99,
-        weight_decay: 1
+        learning_rate: 0.1,
+        nesterov: True,
+        momentum: 0.9
+#        b1: 0.9,
+#        b2: 0.99,
+#        weight_decay: 1
       }
     },
   },

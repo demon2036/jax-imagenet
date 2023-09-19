@@ -48,7 +48,7 @@ def train_step(state: MyTrainState, x, labels):
     grads = jax.lax.pmean(grads, axis_name='batch')
 
     new_state = state.apply_gradients(grads=grads)
-    loss = jax.lax.pmean(loss, axis_name='batch')
+    # loss = jax.lax.pmean(loss, axis_name='batch')
 
     # one_hot_labels = one_hot_labels[0]
     # logits = logits[0]
@@ -92,9 +92,9 @@ class ImageNetTrainer(Trainer):
     def train(self):
         self.state = flax.jax_utils.replicate(self.state)
 
-        for epoch in range(self.total_epoch):
-            with tqdm(self.dl, ) as pbar:
-                for batch in pbar:
+        with tqdm(total=100000) as pbar:
+            for epoch in range(self.total_epoch):
+                for batch in self.dl:
                     x, y = batch
                     x, y = torch_to_jax(x), torch_to_jax(y)
                     x, y = shard(x), shard(y)
@@ -103,6 +103,7 @@ class ImageNetTrainer(Trainer):
                     for k, v in metrics.items():
                         metrics.update({k: v[0]})
                     pbar.set_postfix(metrics)
+                    pbar.update(1)
 
                     if (epoch + 1) % 10 == 0:
                         self.eval()

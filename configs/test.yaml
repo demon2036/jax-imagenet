@@ -1,7 +1,7 @@
 {
   "train": {
       image_size: 224,
-      batch_size: 8,
+      batch_size: 32,
       shuffle_size: 200000,
       data_path: '/home/john/data/imagenet_train_shards',
       seed: 43,
@@ -14,15 +14,18 @@
     Model: {
       target: model2.ResNet50,
       params: {
-          num_classes: 1000
+        num_classes: 1000
       }
     },
     Optimizer: {
-      target: optax.adamw,
+      target: optax.sgd,
       params: {
-        learning_rate: 1.0e-3,
-        b1: 0.9,
-        b2: 0.99
+        learning_rate: 0.0125,
+        nesterov: True,
+        momentum: 0.9
+#        b1: 0.9,
+#        b2: 0.99,
+#        weight_decay: 1
       }
     },
   },

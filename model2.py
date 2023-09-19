@@ -93,12 +93,12 @@ class ResNet(nn.Module):
     block_cls: ModuleDef
     num_classes: int
     num_filters: int = 64
-    dtype: Any = jnp.float32
+    dtype: Any = jnp.float16
     act: Callable = nn.relu
     conv: ModuleDef = nn.Conv
 
     @nn.compact
-    def __call__(self, x, train: bool = True, *args,**kwargs):
+    def __call__(self, x, train: bool = True, *args, **kwargs):
         conv = partial(self.conv, use_bias=False, dtype=self.dtype)
         # norm = partial(
         #     nn.BatchNorm,
@@ -109,8 +109,7 @@ class ResNet(nn.Module):
         #     axis_name='batch',
         # )
 
-        norm=partial(nn.GroupNorm)
-
+        norm = partial(nn.GroupNorm)
 
         x = conv(
             self.num_filters,
