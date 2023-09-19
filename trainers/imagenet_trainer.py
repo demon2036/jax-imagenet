@@ -55,7 +55,7 @@ def train_step(state: MyTrainState, x, labels):
 
     # print(jnp.argmax(on))
 
-    #metric = {"loss": loss, 'delta': jnp.sum(one_hot_labels - logits, axis=1)}
+    # metric = {"loss": loss, 'delta': jnp.sum(one_hot_labels - logits, axis=1)}
     metrics = compute_metrics(logits, labels)
     return new_state, metrics
 
@@ -92,8 +92,8 @@ class ImageNetTrainer(Trainer):
     def train(self):
         self.state = flax.jax_utils.replicate(self.state)
 
-        with tqdm(self.dl, ) as pbar:
-            for epoch in tqdm(range(self.total_epoch)):
+        for epoch in range(self.total_epoch):
+            with tqdm(self.dl, ) as pbar:
                 for batch in pbar:
                     x, y = batch
                     x, y = torch_to_jax(x), torch_to_jax(y)

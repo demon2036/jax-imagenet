@@ -22,7 +22,8 @@
       params: {
         learning_rate: 1.0e-3,
         b1: 0.9,
-        b2: 0.99
+        b2: 0.99,
+        weight_decay: 1
       }
     },
   },
