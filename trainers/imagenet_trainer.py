@@ -16,6 +16,9 @@ NUM_CLASSES = 1000
 
 def cross_entropy_loss(logits, labels):
     one_hot_labels = common_utils.onehot(labels, num_classes=NUM_CLASSES)
+
+    assert logits.shape==labels.shape
+
     xentropy = optax.softmax_cross_entropy(logits=logits, labels=one_hot_labels)
 
     return jnp.mean(xentropy)
@@ -90,7 +93,7 @@ class ImageNetTrainer(Trainer):
         pass
 
     def train(self):
-        self.state = flax.jax_utils.replicate(self.state)
+        state = flax.jax_utils.replicate(self.state)
 
         with tqdm(total=100000) as pbar:
             for epoch in range(self.total_epoch):
@@ -99,7 +102,7 @@ class ImageNetTrainer(Trainer):
                     x, y = torch_to_jax(x), torch_to_jax(y)
                     x, y = shard(x), shard(y)
                     # print(x.shape)
-                    self.state, metrics = train_step(self.state, x, y)
+                    state, metrics = train_step(state, x, y)
                     for k, v in metrics.items():
                         metrics.update({k: v[0]})
                     pbar.set_postfix(metrics)

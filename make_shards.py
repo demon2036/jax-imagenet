@@ -16,11 +16,12 @@ def create_shards(shard_path='imagenet_train_shards', dataset_root='/home/john/d
     category_list = sorted([path.name for path in Path(dataset_root).glob('*') if path.is_dir()])
     category_index = {category_name: i for i, category_name in enumerate(category_list)}
     print(category_index)
+
     shard_dir_path = Path(shard_path)
     shard_dir_path.mkdir(exist_ok=True)
     shard_filename = str(shard_dir_path / 'imagenet_train_shards-%05d.tar')
-
-    with wds.ShardWriter(shard_filename, maxsize=shard_size) as sink, tqdm(file_paths) as pbar:
+    # maxsize=shard_size
+    with wds.ShardWriter(shard_filename, maxcount=100000,maxsize=3e10) as sink, tqdm(file_paths) as pbar:
         for file_path in pbar:
             category_name = file_path.parent.name
             label = category_index[category_name]
@@ -33,8 +34,9 @@ def create_shards(shard_path='imagenet_train_shards', dataset_root='/home/john/d
                 "jpg": img,
                 "cls": label
             })
+    """"""
 
 
 if __name__ == "__main__":
-    create_shards('/home/john/data/imagenet_train_shards', dataset_root='/home/john/data/temp',
-                  shard_size=int(200 * 1000 ** 2))
+    create_shards('/home/john/data/imagenet_train_shards', dataset_root='/home/john/imagenet/train',
+                  shard_size=int(200 * 1000 ** 2), use_shuffle=True)
