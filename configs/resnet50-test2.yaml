@@ -1,0 +1,33 @@
+{
+  "train": {
+      image_size: 224,
+      batch_size: 256,
+      shuffle_size: 200000,
+      data_path: 'gs://jtitor-eu/data/imagenet_train_shards/imagenet_train_shards-00000.tar',
+      seed: 43,
+      total_epoch: 90,
+      model_path: 'check_points/Diffusion'
+  },
+  "State": {
+    target: modules.state_utils.MyTrainState,
+    Input_Shape: [ [ 1,224,224,3 ], ],
+    Model: {
+      target: model2.ResNet50,
+      params: {
+        num_classes: 1000
+      }
+    },
+    Optimizer: {
+      target: optax.sgd,
+      params: {
+        learning_rate: 0.1,
+        nesterov: True,
+        momentum: 0.9
+#        b1: 0.9,
+#        b2: 0.99,
+#        weight_decay: 1
+      }
+    },
+  },
+
+}
