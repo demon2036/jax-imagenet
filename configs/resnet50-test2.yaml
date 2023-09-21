@@ -3,7 +3,7 @@
       image_size: 224,
       batch_size: 256,
       shuffle_size: 200000,
-      data_path: 'gs://jtitor-eu/data/imagenet_train_shards/imagenet_train_shards-00000.tar',
+      data_path: 'gs://jtitor-eu/data/imagenet_train_shards',
       seed: 43,
       total_epoch: 90,
       model_path: 'check_points/Diffusion'

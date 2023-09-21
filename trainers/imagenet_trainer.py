@@ -17,7 +17,7 @@ NUM_CLASSES = 1000
 def cross_entropy_loss(logits, labels):
     one_hot_labels = common_utils.onehot(labels, num_classes=NUM_CLASSES)
 
-    assert logits.shape==labels.shape
+    assert logits.shape == labels.shape
 
     xentropy = optax.softmax_cross_entropy(logits=logits, labels=one_hot_labels)
 
