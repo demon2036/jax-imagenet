@@ -21,7 +21,7 @@ def create_shards(shard_path='imagenet_train_shards', dataset_root='/home/john/d
     shard_dir_path.mkdir(exist_ok=True)
     shard_filename = str(shard_dir_path / 'imagenet_train_shards-%05d.tar')
     # maxsize=shard_size
-    with wds.ShardWriter(shard_filename, maxcount=100000,maxsize=3e10) as sink, tqdm(file_paths) as pbar:
+    with wds.ShardWriter(shard_filename, maxcount=10000,maxsize=3e10) as sink, tqdm(file_paths) as pbar:
         for file_path in pbar:
             category_name = file_path.parent.name
             label = category_index[category_name]
