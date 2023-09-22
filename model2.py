@@ -100,16 +100,16 @@ class ResNet(nn.Module):
     @nn.compact
     def __call__(self, x, train: bool = True, *args, **kwargs):
         conv = partial(self.conv, use_bias=False, dtype=self.dtype)
-        # norm = partial(
-        #     nn.BatchNorm,
-        #     use_running_average=not train,
-        #     momentum=0.9,
-        #     epsilon=1e-5,
-        #     dtype=self.dtype,
-        #     axis_name='batch',
-        # )
+        norm = partial(
+            nn.BatchNorm,
+            use_running_average=not train,
+            momentum=0.9,
+            epsilon=1e-5,
+            dtype=self.dtype,
+            axis_name='batch',
+        )
 
-        norm = partial(nn.GroupNorm)
+       # norm = partial(nn.GroupNorm)
 
         x = conv(
             self.num_filters,

@@ -68,3 +68,52 @@ def create_state_by_config(rng, print_model=True, state_configs={}):
                               tx=tx,
                               batch_stats=variables['batch_stats'] if 'batch_stats' in variables.keys() else None,
                               ema_params=variables['params'])
+
+
+def create_learning_rate_fn(
+        base_learning_rate: float = 0.1,
+        steps_per_epoch: int = 13585,
+        warmup_epochs=5,
+        num_epochs=90
+):
+    """Create learning rate schedule."""
+    warmup_fn = optax.linear_schedule(
+        init_value=0.0,
+        end_value=base_learning_rate,
+        transition_steps=warmup_epochs * steps_per_epoch,
+    )
+    cosine_epochs = max(num_epochs - warmup_epochs, 1)
+    cosine_fn = optax.cosine_decay_schedule(
+        init_value=base_learning_rate, decay_steps=cosine_epochs * steps_per_epoch
+    )
+    schedule_fn = optax.join_schedules(
+        schedules=[warmup_fn, cosine_fn],
+        boundaries=[warmup_epochs * steps_per_epoch],
+    )
+    return schedule_fn
+
+
+def create_state_by_config2(rng, print_model=True, state_configs={}):
+    inputs = list(map(lambda shape: jnp.empty(shape), state_configs['Input_Shape']))
+    model = create_obj_by_config(state_configs['Model'])
+
+    if print_model:
+        print(model.tabulate(rng, *inputs, z_rng=rng, depth=1, console_kwargs={'width': 200}))
+    variables = model.init(rng, *inputs, z_rng=rng)
+
+    learning_rate_fn = create_learning_rate_fn()
+    state_configs['Optimizer']['params']['learning_rate'] = learning_rate_fn
+
+    args = tuple()
+    args += (create_obj_by_config(state_configs['Optimizer']),)
+    tx = optax.chain(
+        *args
+    )
+
+    train_state = get_obj_from_str(state_configs['target'])
+
+    return train_state.create(apply_fn=model.apply,
+                              params=variables['params'],
+                              tx=tx,
+                              batch_stats=variables['batch_stats'] if 'batch_stats' in variables.keys() else None,
+                              ema_params=variables['params'])

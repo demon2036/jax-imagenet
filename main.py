@@ -1,6 +1,6 @@
 import argparse
 import jax.random
-from modules.state_utils import create_obj_by_config, create_state_by_config
+from modules.state_utils import create_obj_by_config, create_state_by_config, create_state_by_config2
 from modules.utils import read_yaml
 import os
 from jax_smi import initialise_tracking
@@ -17,11 +17,10 @@ if __name__ == "__main__":
     print(args)
     config = read_yaml(args.config_path)
 
-    train_state = create_state_by_config(rng=jax.random.PRNGKey(seed=config['train']['seed']),
-                                         state_configs=config['State'])
+    train_state = create_state_by_config2(rng=jax.random.PRNGKey(seed=config['train']['seed']),
+                                          state_configs=config['State'])
 
     trainer = ImageNetTrainer(train_state, **config['train'])
 
     trainer.load()
     trainer.train()
-
