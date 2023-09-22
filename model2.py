@@ -93,7 +93,7 @@ class ResNet(nn.Module):
     block_cls: ModuleDef
     num_classes: int
     num_filters: int = 64
-    dtype: Any = jnp.float16
+    dtype: Any = jnp.bfloat16
     act: Callable = nn.relu
     conv: ModuleDef = nn.Conv
 
