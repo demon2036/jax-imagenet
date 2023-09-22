@@ -47,6 +47,35 @@ def compute_metrics(logits, labels):
 @partial(jax.pmap, axis_name='batch')
 def train_step(state: MyTrainState, batch, labels):
     def loss_fn(params):
+        logits = state.apply_fn({'params': params}, batch, )
+        loss = cross_entropy_loss(logits, labels)
+        weight_penalty_params = jax.tree_util.tree_leaves(params)
+        weight_decay = 0.0001
+        weight_l2 = sum(
+            jnp.sum(x ** 2) for x in weight_penalty_params if x.ndim > 1
+        )
+        weight_penalty = weight_decay * 0.5 * weight_l2
+        loss = loss + weight_penalty
+        # one_hot_labels = common_utils.onehot(labels, num_classes=NUM_CLASSES)
+
+        return loss, (logits)
+
+    grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
+    (loss, (logits, new_model_state)), grads = grad_fn(state.params)
+    #  Re-use same axis_name as in the call to `pmap(...train_step,axis=...)` in the train function
+    grads = jax.lax.pmean(grads, axis_name='batch')
+
+    new_state = state.apply_gradients(grads=grads, )
+    # print(jnp.argmax(on))
+    # metric = {"loss": loss, 'delta': jnp.sum(one_hot_labels - logits, axis=1)}
+    metrics = compute_metrics(logits, labels)
+    return new_state, metrics
+
+
+"""
+@partial(jax.pmap, axis_name='batch')
+def train_step(state: MyTrainState, batch, labels):
+    def loss_fn(params):
         logits, new_model_state = state.apply_fn({'params': params}, batch, mutable=['batch_stats'])
         loss = cross_entropy_loss(logits, labels)
         weight_penalty_params = jax.tree_util.tree_leaves(params)
@@ -67,10 +96,10 @@ def train_step(state: MyTrainState, batch, labels):
 
     new_state = state.apply_gradients(grads=grads, batch_stats=new_model_state['batch_stats'])
     # print(jnp.argmax(on))
-
     # metric = {"loss": loss, 'delta': jnp.sum(one_hot_labels - logits, axis=1)}
     metrics = compute_metrics(logits, labels)
     return new_state, metrics
+"""
 
 
 class ImageNetTrainer(Trainer):
