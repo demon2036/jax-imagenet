@@ -61,7 +61,7 @@ def train_step(state: MyTrainState, batch, labels):
         return loss, (logits)
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
-    (loss, (logits, new_model_state)), grads = grad_fn(state.params)
+    (loss, (logits)), grads = grad_fn(state.params)
     #  Re-use same axis_name as in the call to `pmap(...train_step,axis=...)` in the train function
     grads = jax.lax.pmean(grads, axis_name='batch')
 
