@@ -2,8 +2,10 @@ import json
 from pathlib import Path
 import cv2
 import jax
+import torch
 import tqdm
 import webdataset as wds
+from webdataset import WebLoader
 import albumentations as A
 from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader, Dataset
@@ -16,7 +18,7 @@ class ImagePreprocessor():
         self.resize = A.Resize(image_size, image_size)
         self.center_crop = A.CenterCrop(image_size, image_size, p=0.5)
         self.random_horizontal_flip = A.HorizontalFlip()
-        self.normalize = A.Normalize()
+        self.normalize = A.Normalize(max_pixel_value=1)
 
     def preprocess(self, img):
         img = self.resize(image=img)['image']
@@ -54,19 +56,38 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
 """
 
 
+def transfer_data(x):
+    # x = A.center_crop(x, image_size, image_size)
+    # x = A.resize(x, image_size, image_size, interpolation=cv2.INTER_CUBIC)
+    # A.normalize()
+    preprocessor = ImagePreprocessor(image_size=224)
+    x = preprocessor.preprocess(x)
+
+    return x
+
+
 def test_cycle(dataset_root='./imagenet_train_shards', batch_size=128, num_workers=8, pin_memory=True,
                drop_last=True, shuffle_size=10000):
     # print(shards_urls)
-    shards_urls = [str(path) for path in Path(dataset_root).glob('*.tar')]
-    web_dataset = wds.WebDataset(shards_urls, shardshuffle=True, ).shuffle(shuffle_size).decode('rgb').to_tuple('jpg',).batched(batch_size)  # .decode('rgb').batched(batch_size)  # .to_tuple(
-    # 'jpg', 'cls')
+
+    preprocessor = ImagePreprocessor()
+
+    shards_urls = [str(path) for path in Path(dataset_root).glob('*')]
+    # print(shards_urls)
+    dataset = (wds.WebDataset(shards_urls, shardshuffle=True).mcached().shuffle(shuffle_size).decode('rgb').to_tuple('jpg',
+                                                                                                           'cls').map_tuple(
+        lambda img: transfer_data(img)
+    ))
+
+    dl = DataLoader(dataset, num_workers=8, batch_size=batch_size, pin_memory=pin_memory, drop_last=drop_last,
+                    persistent_workers=False)
 
     cached_data = []
-    for data in web_dataset:
-        cached_data.append(data)
+    for data in dl:
+        # x, y = data
+        #cached_data.append(data)
         yield data
-
-    print(len(cached_data))
+    print(1)
 
     dataset = MyWebDataSet(cached_data)
 
@@ -117,15 +138,15 @@ if __name__ == '__main__':
     # dl = create_input_pipeline(dataset_root='/home/john/data/ffhq_shards', batch_size=32, num_workers=8)
     # dl = create_input_pipeline(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=1024,
     #                            num_workers=0)
-    dl = test_cycle(dataset_root='/home/john/data/ffhq_shards', batch_size=1024, num_workers=8)
-    #dl = test_cycle(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=1024, num_workers=8)
+    #dl = test_cycle(dataset_root='/home/john/data/imagenet_train_shards', batch_size=1024, num_workers=8)
+    dl = test_cycle(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=1024, num_workers=8)
     for _ in range(1000):
         # with tqdm(total=100000) as pbar:
 
         for datas in tqdm(dl, total=100000):
-            x=datas[0]
+            # x = datas[0]
             # print(x)
-            print(x.shape)
+            # print(x.shape)
             pass
         print(1)
         # break
