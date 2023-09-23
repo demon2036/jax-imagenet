@@ -236,11 +236,14 @@ def create_split(
     ds = ds.with_options(options)
 
     if cache:
+
         ds = ds.cache()
+
 
     if train:
         ds = ds.repeat()
         ds = ds.shuffle(shuffle_buffer_size, seed=0)
+
 
     ds = ds.map(decode_example, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     ds = ds.batch(batch_size, drop_remainder=True)
