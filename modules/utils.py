@@ -45,6 +45,6 @@ def get_obj_from_str(string: str):
 
 
 def torch_to_jax(x):
-    x = np.array(x)
+    x = x.numpy()
     x = jnp.asarray(x)
     return x

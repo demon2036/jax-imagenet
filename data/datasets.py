@@ -49,11 +49,8 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
         lambda img: transfer_data(img)
     ))
 
-    dataset.with_length(1000)
-    print(len(dataset))
-
-    dl = DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, pin_memory=pin_memory, drop_last=drop_last,
-                    persistent_workers=True)
+    dl = DataLoader(dataset, num_workers=0, batch_size=batch_size, pin_memory=pin_memory, drop_last=drop_last,
+                    persistent_workers=False)
     return dl
     # for sample in tqdm.tqdm(dl, total=10000):
     #     data, cls = sample
@@ -62,18 +59,20 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
 
 if __name__ == '__main__':
 
-    # dl = create_input_pipeline(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=32)
-    dl = create_input_pipeline(dataset_root='/home/john/data/imagenet_train_shards', batch_size=32)
-    for data in tqdm(dl, total=10000):
-        x, y = data
+    dl = create_input_pipeline(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=32)
+   # dl = create_input_pipeline(dataset_root='/home/john/data/imagenet_train_shards', batch_size=32)
+    for _ in range(10):
+        for data in tqdm(dl, total=10000):
+            x, y = data
+        dl.num_workers=48
         # print(x.min(), x.max())
 
-        print(x.shape)
-        x=np.array(x)
-        x=torch.Tensor(x)
-        x=einops.rearrange(x,'b h w c->b c h w')
-        save_image(x,'test.png')
-        break
+        # print(x.shape)
+        # x=np.array(x)
+        # x=torch.Tensor(x)
+        # x=einops.rearrange(x,'b h w c->b c h w')
+        # save_image(x,'test.png')
+        # break
 
         # print(x.shape, y.shape)
 

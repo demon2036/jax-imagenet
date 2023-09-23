@@ -31,14 +31,11 @@ def cycle(dataset):
         yield data
 
 
-
-
-
 class MyWebDataSet(Dataset):
     def __init__(self, dataset_root='./imagenet_train_shards', shuffle_size=10000, cache=False, web_dataset=None):
         self.preprocessor = ImagePreprocessor()
         self.dataset_root = dataset_root
-        self.dataset_size = 1281167#self.info_from_json()
+        self.dataset_size = 1281167  # self.info_from_json()
         self.cache = cache
 
         # self.web_dataset = wds.WebDataset(shards_urls, shardshuffle=True).shuffle(shuffle_size).decode(
@@ -91,8 +88,8 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
     # for x in dataset:
     #     print(x)
 
-    dl = DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, pin_memory=False, drop_last=False,
-                    persistent_workers=True)
+    dl = DataLoader(dataset, num_workers=0, batch_size=batch_size, pin_memory=False, drop_last=False,
+                    persistent_workers=False)
     return dl
     # for sample in tqdm.tqdm(dl, total=10000):
     #     data, cls = sample
@@ -103,10 +100,11 @@ if __name__ == '__main__':
 
     # dl = create_input_pipeline(dataset_root='/home/john/data/imagenet_train_shards', batch_size=32)
     # dl = create_input_pipeline(dataset_root='/home/john/data/ffhq_shards', batch_size=32, num_workers=8)
-    dl = create_input_pipeline(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=1024, num_workers=1)
+    dl = create_input_pipeline(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=1024,
+                               num_workers=1)
     for _ in range(10):
         for datas in tqdm(dl, total=10000):
-            #print(datas.shape)
+            # print(datas.shape)
             pass
         print(1)
         # break

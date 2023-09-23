@@ -134,7 +134,6 @@ class ImageNetTrainer(Trainer):
         self.checkpoint_manager.save(self.finished_steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
 
     def eval(self):
-
         pass
 
     def train(self):
