@@ -31,6 +31,12 @@ def cycle(dataset):
         yield data
 
 
+
+def cycle():
+
+
+
+
 class MyWebDataSet(Dataset):
     def __init__(self, dataset_root='./imagenet_train_shards', shuffle_size=10000, cache=False, web_dataset=None):
         self.preprocessor = ImagePreprocessor()
