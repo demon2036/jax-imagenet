@@ -18,7 +18,7 @@
       }
     },
     Optimizer: {
-      target: optax.lion,
+      target: optax.sgd,
       params: {
         learning_rate: 0.4,
         nesterov: True,
