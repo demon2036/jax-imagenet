@@ -109,7 +109,7 @@ class ResNet(nn.Module):
         #     axis_name='batch',
         # )
 
-       norm = partial(nn.GroupNorm)
+        norm = partial(nn.GroupNorm)
 
         x = conv(
             self.num_filters,
