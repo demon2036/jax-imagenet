@@ -9,7 +9,7 @@ from flax.training import orbax_utils, common_utils
 
 from input_pipeline import create_split
 from modules.utils import create_checkpoint_manager, default, load_ckpt, torch_to_jax
-from trainers.basic_trainer import Trainer
+from trainers.basic_trainer_tf import Trainer
 from modules.state_utils import *
 
 NUM_CLASSES = 1000
