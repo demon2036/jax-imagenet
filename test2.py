@@ -7,11 +7,11 @@ import numpy as np
 from tqdm import tqdm
 
 if __name__ == "__main__":
-    dataset_builder = tfds.builder('imagenet2012',try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets')
-    ds=create_split(dataset_builder,batch_size=64,train=True,cache=True)
+    dataset_builder = tfds.builder('imagenet2012', )  # try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets'
+    ds = create_split(dataset_builder, batch_size=64, train=True, cache=True)
 
     for data in tqdm(ds):
-        x,y=data['image'],data['label']
+        x, y = data['image'], data['label']
         print(x.shape)
         # x=np.array(x)
         # x=torch.Tensor(x)
