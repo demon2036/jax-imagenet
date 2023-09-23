@@ -7,6 +7,8 @@ import albumentations as A
 from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
 import numpy as np
+from tqdm import tqdm
+image_size = 224
 
 
 class ImagePreprocessor():
@@ -17,34 +19,34 @@ class ImagePreprocessor():
         self.normalize = A.Normalize()
 
     def preprocess(self, img):
-        # print(img.max(), img.min())
         img = self.resize(image=img)['image']
         # img = self.center_crop(image=img)['image']
         img = self.random_horizontal_flip(image=img)['image']
-        # img=img/255.0
         img = self.normalize(image=img)['image']
         return img
 
 
-def transfer_data(x, image_size=224):
+
+
+
+def transfer_data(x):
     # x = A.center_crop(x, image_size, image_size)
     # x = A.resize(x, image_size, image_size, interpolation=cv2.INTER_CUBIC)
-
+    # A.normalize()
     preprocessor = ImagePreprocessor(image_size=image_size)
     x = preprocessor.preprocess(x)
 
     return x
 
 
-def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128, num_workers=1, pin_memory=True,
+def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128, num_workers=8, pin_memory=True,
                           drop_last=True, shuffle_size=10000):
     shards_urls = [str(path) for path in Path(dataset_root).glob('*')]
-
     # print(shards_urls)
-    dataset = wds.WebDataset(shards_urls, shardshuffle=True).shuffle(shuffle_size).decode('rgb').to_tuple('jpg',
-                                                                                                          'cls').map_tuple(
-        transfer_data)
-    dl = DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, pin_memory=pin_memory, drop_last=drop_last,persistent_workers=True)
+    dataset = (wds.WebDataset(shards_urls, shardshuffle=True).shuffle(shuffle_size).decode('rgb').to_tuple('jpg','cls').map_tuple(lambda img: transfer_data(img)
+                          ))
+    dl = DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, pin_memory=pin_memory, drop_last=drop_last,
+                    persistent_workers=True)
     return dl
     # for sample in tqdm.tqdm(dl, total=10000):
     #     data, cls = sample
@@ -53,11 +55,12 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
 
 if __name__ == '__main__':
 
-    dl = create_input_pipeline(dataset_root='pipe:gsutil cat gs://somebucket/dataset-000.tar', batch_size=16)
-    for data in dl:
+    dl = create_input_pipeline(dataset_root='/home/john/data/imagenet_train_shards', batch_size=32)
+    for data in tqdm(dl,total=10000):
         x, y = data
-        print(x.shape, y.shape)
-        break
+        print(x.min(),x.max())
+        #print(x.shape, y.shape)
+
 
     # create_shards()
 
