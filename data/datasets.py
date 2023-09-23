@@ -26,7 +26,7 @@ class ImagePreprocessor():
         img = self.resize(image=img)['image']
         # img = self.center_crop(image=img)['image']
         img = self.random_horizontal_flip(image=img)['image']
-        img = self.normalize(image=img)['image']
+        img = self.normalize(image=img,max_pixel_value=1)['image']
         return img
 
 
