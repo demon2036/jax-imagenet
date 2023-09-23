@@ -31,6 +31,11 @@ def cycle(dataset):
         yield data
 
 
+
+
+
+
+#imagenet_train_shards-{00000..00012}.tar
 class MyWebDataSet(Dataset):
     def __init__(self, dataset_root='./imagenet_train_shards', shuffle_size=10000, cache=False, web_dataset=None):
         self.preprocessor = ImagePreprocessor()
@@ -88,7 +93,7 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
     # for x in dataset:
     #     print(x)
 
-    dl = DataLoader(dataset, num_workers=0, batch_size=batch_size, pin_memory=False, drop_last=False,
+    dl = DataLoader(dataset, num_workers=12, batch_size=batch_size, pin_memory=False, drop_last=False,
                     persistent_workers=False)
     return dl
     # for sample in tqdm.tqdm(dl, total=10000):
