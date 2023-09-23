@@ -49,7 +49,7 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
         lambda img: transfer_data(img)
     ))
 
-    dl = DataLoader(dataset, num_workers=0, batch_size=batch_size, pin_memory=pin_memory, drop_last=drop_last,
+    dl = DataLoader(dataset, num_workers=8, batch_size=batch_size, pin_memory=pin_memory, drop_last=drop_last,
                     persistent_workers=False)
     return dl
     # for sample in tqdm.tqdm(dl, total=10000):
