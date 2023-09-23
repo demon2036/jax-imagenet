@@ -88,7 +88,7 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
     # for x in dataset:
     #     print(x)
 
-    dl = DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, pin_memory=pin_memory, drop_last=drop_last,
+    dl = DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, pin_memory=False, drop_last=False,
                     persistent_workers=True)
     return dl
     # for sample in tqdm.tqdm(dl, total=10000):
@@ -100,7 +100,7 @@ if __name__ == '__main__':
 
     # dl = create_input_pipeline(dataset_root='/home/john/data/imagenet_train_shards', batch_size=32)
     # dl = create_input_pipeline(dataset_root='/home/john/data/ffhq_shards', batch_size=32, num_workers=8)
-    dl = create_input_pipeline(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=1024, num_workers=8)
+    dl = create_input_pipeline(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=1024, num_workers=1)
     for _ in range(10):
         for datas in tqdm(dl, total=10000):
             #print(datas.shape)
