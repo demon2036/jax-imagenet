@@ -101,7 +101,7 @@ if __name__ == '__main__':
     # dl = create_input_pipeline(dataset_root='/home/john/data/imagenet_train_shards', batch_size=32)
     # dl = create_input_pipeline(dataset_root='/home/john/data/ffhq_shards', batch_size=32, num_workers=8)
     dl = create_input_pipeline(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=1024,
-                               num_workers=1)
+                               num_workers=0)
     for _ in range(10):
         for datas in tqdm(dl, total=10000):
             # print(datas.shape)
