@@ -110,8 +110,8 @@ class ImageNetTrainer(Trainer):
                  **kwargs):
         super().__init__(*args, **kwargs)
         # dataset_builder = tfds.builder('imagenet2012', try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets')
-        dataset_builder = tfds.builder('imagenet2012',try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets' )  # try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets'
-        self.dl = create_split(dataset_builder, batch_size=1024, train=True, cache=True)
+        # dataset_builder = tfds.builder('imagenet2012',try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets' )  # try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets'
+        # self.dl = create_split(dataset_builder, batch_size=1024, train=True, cache=True)
 
         self.state = state
         self.template_ckpt = {'model': self.state, 'steps': self.finished_steps}
