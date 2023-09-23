@@ -1,12 +1,15 @@
 from pathlib import Path
 import cv2
+import einops
 import jax
+import torch
 import tqdm
 import webdataset as wds
 import albumentations as A
 from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader,Dataset
 import numpy as np
+from torchvision.utils import save_image
 from tqdm import tqdm
 
 image_size = 224
@@ -17,7 +20,7 @@ class ImagePreprocessor():
         self.resize = A.Resize(image_size, image_size)
         self.center_crop = A.CenterCrop(image_size, image_size, p=0.5)
         self.random_horizontal_flip = A.HorizontalFlip()
-        self.normalize = A.Normalize()
+        self.normalize = A.Normalize(max_pixel_value=1)
 
     def preprocess(self, img):
         img = self.resize(image=img)['image']
@@ -35,21 +38,6 @@ def transfer_data(x):
     x = preprocessor.preprocess(x)
 
     return x
-
-
-class MyWebDataSet(Dataset):
-    def __init__(self):
-        self.preprocessor = ImagePreprocessor()
-
-    def __len__(self):
-        pass
-
-    def __getitem__(self, idx):
-        pass
-
-
-    def _preprocess(self, img):
-        return self.preprocessor.preprocess(img)
 
 
 def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128, num_workers=8, pin_memory=True,
@@ -74,10 +62,19 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
 
 if __name__ == '__main__':
 
-    dl = create_input_pipeline(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=32)
+    # dl = create_input_pipeline(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=32)
+    dl = create_input_pipeline(dataset_root='/home/john/data/imagenet_train_shards', batch_size=32)
     for data in tqdm(dl, total=10000):
         x, y = data
-        print(x.min(), x.max())
+        # print(x.min(), x.max())
+
+        print(x.shape)
+        x=np.array(x)
+        x=torch.Tensor(x)
+        x=einops.rearrange(x,'b h w c->b c h w')
+        save_image(x,'test.png')
+        break
+
         # print(x.shape, y.shape)
 
     # create_shards()

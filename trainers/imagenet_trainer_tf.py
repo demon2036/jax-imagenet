@@ -134,6 +134,7 @@ class ImageNetTrainer(Trainer):
         self.checkpoint_manager.save(self.finished_steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
 
     def eval(self):
+
         pass
 
     def train(self):
@@ -151,9 +152,9 @@ class ImageNetTrainer(Trainer):
                         metrics.update({k: v[0]})
                     pbar.set_postfix(metrics)
                     pbar.update(1)
-
-                    if (epoch + 1) % 10 == 0:
-                        self.eval()
+                print()
+                if (epoch + 1) % 10 == 0:
+                    self.eval()
 
 
 if __name__ == "__main__":

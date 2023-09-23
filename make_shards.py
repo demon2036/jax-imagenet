@@ -75,5 +75,5 @@ if __name__ == "__main__":
     create_shards('/home/john/data/imagenet_train_shards', dataset_root='/home/john/imagenet/train',
                   shard_size=int(200 * 1000 ** 2), use_shuffle=True)
 
-    create_shards_no_label('/home/john/data/ffhq_shards', dataset_root='/home/john/imagenet/train',
-                           shard_size=int(200 * 1000 ** 2), use_shuffle=True)
+    # create_shards_no_label('/home/john/data/ffhq_shards', dataset_root='/home/john/imagenet/train',
+    #                        shard_size=int(200 * 1000 ** 2), use_shuffle=True)
