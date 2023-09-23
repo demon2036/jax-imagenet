@@ -72,7 +72,8 @@ def test_cycle(dataset_root='./imagenet_train_shards', batch_size=128, num_worke
 
     preprocessor = ImagePreprocessor()
 
-    shards_urls = [str(path) for path in Path(dataset_root).glob('*')]
+    # shards_urls = [str(path) for path in Path(dataset_root).glob('*')]
+    shards_urls=dataset_root
     # print(shards_urls)
     dataset = (wds.WebDataset(shards_urls, shardshuffle=True).mcached().shuffle(shuffle_size).decode('rgb').to_tuple('jpg',
                                                                                                            'cls').map_tuple(
