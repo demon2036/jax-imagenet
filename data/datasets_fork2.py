@@ -141,7 +141,7 @@ if __name__ == '__main__':
     #                            num_workers=0)
     #dl = test_cycle(dataset_root='/home/john/data/imagenet_train_shards', batch_size=1024, num_workers=8)
     # dl = test_cycle(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=1024, num_workers=8)
-    dl = test_cycle(dataset_root='gs:/jtitor-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00012}.tar', batch_size=1024, num_workers=8)
+    dl = test_cycle(dataset_root='gs:/jtitor-eu/data/imagenet_train_shards/imagenet_train_shards-00000.tar', batch_size=1024, num_workers=8)
 
     for _ in range(1000):
         # with tqdm(total=100000) as pbar:
