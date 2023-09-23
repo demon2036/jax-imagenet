@@ -52,6 +52,7 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
 
 
 if __name__ == '__main__':
+
     dl = create_input_pipeline(dataset_root='pipe:gsutil cat gs://somebucket/dataset-000.tar', batch_size=16)
     for data in dl:
         x, y = data

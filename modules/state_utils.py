@@ -72,7 +72,7 @@ def create_state_by_config(rng, print_model=True, state_configs={}):
 
 def create_learning_rate_fn(
         base_learning_rate: float = 0.1,
-        steps_per_epoch: int = 13585,
+        steps_per_epoch: int = 1250,
         warmup_epochs=5,
         num_epochs=90
 ):

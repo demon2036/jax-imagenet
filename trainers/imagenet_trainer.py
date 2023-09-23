@@ -134,7 +134,7 @@ class ImageNetTrainer(Trainer):
     def train(self):
         state = flax.jax_utils.replicate(self.state)
 
-        with tqdm(total=100000) as pbar:
+        with tqdm(total=1000000) as pbar:
             for epoch in range(self.total_epoch):
                 for batch in self.dl:
                     x, y = batch
