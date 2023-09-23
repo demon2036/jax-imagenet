@@ -32,9 +32,6 @@ def cycle(dataset):
 
 
 
-def cycle():
-
-
 
 
 class MyWebDataSet(Dataset):
