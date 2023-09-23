@@ -36,7 +36,7 @@ def transfer_data(x, image_size=224):
     return x
 
 
-def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128, num_workers=8, pin_memory=True,
+def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128, num_workers=1, pin_memory=True,
                           drop_last=True, shuffle_size=10000):
     shards_urls = [str(path) for path in Path(dataset_root).glob('*')]
 
@@ -44,7 +44,7 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
     dataset = wds.WebDataset(shards_urls, shardshuffle=True).shuffle(shuffle_size).decode('rgb').to_tuple('jpg',
                                                                                                           'cls').map_tuple(
         transfer_data)
-    dl = DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, pin_memory=pin_memory, drop_last=drop_last)
+    dl = DataLoader(dataset, num_workers=num_workers, batch_size=batch_size, pin_memory=pin_memory, drop_last=drop_last,persistent_workers=True)
     return dl
     # for sample in tqdm.tqdm(dl, total=10000):
     #     data, cls = sample
