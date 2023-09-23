@@ -9,7 +9,7 @@ def create_shards(shard_path='imagenet_train_shards', dataset_root='/home/john/d
                   shard_size=int(1 * 1000 ** 3), use_shuffle=False):
     # dataset=ImageFolder()
     file_paths = [path for path in Path(dataset_root).glob('*/*')]
-
+    print(len(file_paths))
     if use_shuffle:
         for _ in range(10):
             shuffle(file_paths)
@@ -72,8 +72,8 @@ def create_shards_no_label(shard_path='imagenet_train_shards', dataset_root='/ho
 
 
 if __name__ == "__main__":
-    # create_shards('/home/john/data/imagenet_train_shards', dataset_root='/home/john/imagenet/train',
-    #               shard_size=int(200 * 1000 ** 2), use_shuffle=True)
+    create_shards('/home/john/data/imagenet_train_shards', dataset_root='/home/john/imagenet/train',
+                  shard_size=int(200 * 1000 ** 2), use_shuffle=True)
 
-    create_shards_no_label('/home/john/data/ffhq_shards', dataset_root='/home/john/data/FFHQ',
+    create_shards_no_label('/home/john/data/ffhq_shards', dataset_root='/home/john/imagenet/train',
                            shard_size=int(200 * 1000 ** 2), use_shuffle=True)

@@ -35,7 +35,7 @@ class MyWebDataSet(Dataset):
     def __init__(self, dataset_root='./imagenet_train_shards', shuffle_size=10000, cache=False, web_dataset=None):
         self.preprocessor = ImagePreprocessor()
         self.dataset_root = dataset_root
-        self.dataset_size = self.info_from_json()
+        self.dataset_size = 1281167#self.info_from_json()
         self.cache = cache
 
         # self.web_dataset = wds.WebDataset(shards_urls, shardshuffle=True).shuffle(shuffle_size).decode(
@@ -63,8 +63,8 @@ class MyWebDataSet(Dataset):
         else:
             data = next(self.web_dataset)
             preprocess_img = self._preprocess(data['jpg'])
-            # if self.cache:
-            #     self.cached_data.append(preprocess_img)
+            if self.cache:
+                self.cached_data.append(preprocess_img)
             # if self.cache:
             #     self.cached_data.append(data['jpg'])
             return preprocess_img
@@ -100,10 +100,12 @@ if __name__ == '__main__':
 
     # dl = create_input_pipeline(dataset_root='/home/john/data/imagenet_train_shards', batch_size=32)
     # dl = create_input_pipeline(dataset_root='/home/john/data/ffhq_shards', batch_size=32, num_workers=8)
-    dl = create_input_pipeline(dataset_root='/home/john/data/ffhq_shards', batch_size=32, num_workers=8)
+    dl = create_input_pipeline(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=1024, num_workers=8)
     for _ in range(10):
         for datas in tqdm(dl, total=10000):
-            print(datas.shape)
+            #print(datas.shape)
+            pass
+        print(1)
         # break
         # x, y = datas
         # print(x.min(), x.max())
