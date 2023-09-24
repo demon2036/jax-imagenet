@@ -59,19 +59,20 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
 
 if __name__ == '__main__':
 
-    dl = create_input_pipeline(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=32)
-   # dl = create_input_pipeline(dataset_root='/home/john/data/imagenet_train_shards', batch_size=32)
-    for _ in range(10):
-        for data in tqdm(dl, total=10000):
-            x, y = data
-        dl.num_workers=48
+    # dl = create_input_pipeline(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=32)
+    dl = create_input_pipeline(dataset_root='/home/john/data/imagenet_train_shards', batch_size=32)
+
+    for data in tqdm(dl, total=10000):
+        x, y = data
+
         # print(x.min(), x.max())
 
-        # print(x.shape)
-        # x=np.array(x)
-        # x=torch.Tensor(x)
-        # x=einops.rearrange(x,'b h w c->b c h w')
-        # save_image(x,'test.png')
+        print(x.shape)
+        x=np.array(x)
+        x=torch.Tensor(x)
+        x=einops.rearrange(x,'b h w c->b c h w')
+        save_image(x,'test.png')
+        break
         # break
 
         # print(x.shape, y.shape)
