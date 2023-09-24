@@ -23,11 +23,7 @@ def acc_topk(logits, labels, topk=(1,)):
 
 def cross_entropy_loss(logits, labels):
     one_hot_labels = common_utils.onehot(labels, num_classes=NUM_CLASSES)
-
-    assert logits.shape == one_hot_labels.shape
-
     xentropy = optax.softmax_cross_entropy(logits=logits, labels=one_hot_labels)
-
     return jnp.mean(xentropy)
 
 
@@ -75,10 +71,10 @@ def train_step(state: MyTrainState, batch, labels):
 
 
 @partial(jax.pmap, axis_name='batch')
-def train_step(state: MyTrainState, batch, labels):
+def train_step(state: MyTrainState, batch):
     def loss_fn(params):
-        logits, new_model_state = state.apply_fn({'params': params}, batch, mutable=['batch_stats'])
-        loss = cross_entropy_loss(logits, labels)
+        logits, new_model_state = state.apply_fn({'params': params}, batch['image'], mutable=['batch_stats'])
+        loss = cross_entropy_loss(logits, batch['label'])
         weight_penalty_params = jax.tree_util.tree_leaves(params)
         weight_decay = 0.0001
         weight_l2 = sum(
@@ -98,7 +94,7 @@ def train_step(state: MyTrainState, batch, labels):
     new_state = state.apply_gradients(grads=grads, batch_stats=new_model_state['batch_stats'] if 'batch_stats' in new_model_state else None )
     # print(jnp.argmax(on))
     # metric = {"loss": loss, 'delta': jnp.sum(one_hot_labels - logits, axis=1)}
-    metrics = compute_metrics(logits, labels)
+    metrics = compute_metrics(logits, batch['label'])
     return new_state, metrics
 
 
@@ -116,9 +112,6 @@ class ImageNetTrainer(Trainer):
         # dataset_builder = tfds.builder('imagenet2012', try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets')
         # dataset_builder = tfds.builder('imagenet2012',try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets' )  # try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets'
         # self.dl = create_split(dataset_builder, batch_size=1024, train=True, cache=True)
-
-
-
         self.state = state
         self.template_ckpt = {'model': self.state, 'steps': self.finished_steps}
 
@@ -148,11 +141,11 @@ class ImageNetTrainer(Trainer):
         with tqdm(total=1000000) as pbar:
             for epoch in range(self.total_epoch):
                 for batch in self.dl:
-                    x, y = batch['image'],batch['label']
+                    #x, y = batch['image'],batch['label']
                     #x, y = torch_to_jax(x), torch_to_jax(y)
                     #x, y = shard(x), shard(y)
                     # print(x.shape)
-                    state, metrics = train_step(state, x, y)
+                    state, metrics = train_step(state, batch, y)
                     for k, v in metrics.items():
                         metrics.update({k: v[0]})
                     pbar.set_postfix(metrics)
