@@ -45,7 +45,7 @@ class Trainer:
         self.dl=flax.jax_utils.prefetch_to_device(self.dl,2)
 
         self.steps_per_epoch = (
-                dataset_builder.info.splits['train'].num_examples // config.batch_size
+                dataset_builder.info.splits['train'].num_examples // batch_size
         )
 
 
