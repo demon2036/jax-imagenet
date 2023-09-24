@@ -1,3 +1,5 @@
+import flax.jax_utils
+
 from data.datasets import create_input_pipeline
 import jax
 import tensorflow_datasets as tfds
@@ -40,6 +42,7 @@ class Trainer:
         ds = create_split(dataset_builder, batch_size=batch_size, train=True, cache=True)
 
         self.dl = map(prepare_tf_data, ds)
+        self.dl=flax.jax_utils.prefetch_to_device(self.dl,2)
 
 
         # self.dl = create_input_pipeline(batch_size=batch_size, num_workers=num_workers, dataset_root=data_path,drop_last=drop_last,shuffle_size=shuffle_size)
