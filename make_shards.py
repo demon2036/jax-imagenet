@@ -51,7 +51,7 @@ def create_shards_no_label(shard_path='imagenet_train_shards', dataset_root='/ho
     shard_filename = str(shard_dir_path / 'data_shards-%05d.tar')
     dataset_size = 0
     # maxsize=shard_size
-    with wds.ShardWriter(shard_filename, maxcount=10000, maxsize=3e9) as sink, tqdm(file_paths) as pbar:
+    with wds.ShardWriter(shard_filename,  maxsize=shard_size) as sink, tqdm(file_paths) as pbar:
         for file_path in pbar:
             dataset_size += 1
             category_name = file_path.parent.name
@@ -73,7 +73,7 @@ def create_shards_no_label(shard_path='imagenet_train_shards', dataset_root='/ho
 
 if __name__ == "__main__":
     create_shards('/home/john/data/imagenet_train_shards', dataset_root='/home/john/imagenet/train',
-                  shard_size=int(200 * 1000 ** 2), use_shuffle=True)
+                  shard_size=int(150 * 1000 ** 2), use_shuffle=True)
 
     # create_shards_no_label('/home/john/data/ffhq_shards', dataset_root='/home/john/imagenet/train',
     #                        shard_size=int(200 * 1000 ** 2), use_shuffle=True)

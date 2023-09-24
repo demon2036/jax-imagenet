@@ -91,7 +91,7 @@ class ResNet(nn.Module):
 
     stage_sizes: Sequence[int]
     block_cls: ModuleDef
-    num_classes: int
+    num_classes: int = 1000
     num_filters: int = 64
     dtype: Any = jnp.bfloat16
     act: Callable = nn.relu
