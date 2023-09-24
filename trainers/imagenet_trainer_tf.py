@@ -145,7 +145,7 @@ class ImageNetTrainer(Trainer):
                     #x, y = torch_to_jax(x), torch_to_jax(y)
                     #x, y = shard(x), shard(y)
                     # print(x.shape)
-                    state, metrics = train_step(state, batch, y)
+                    state, metrics = train_step(state, batch)
                     for k, v in metrics.items():
                         metrics.update({k: v[0]})
                     pbar.set_postfix(metrics)
