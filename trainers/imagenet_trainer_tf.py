@@ -30,7 +30,7 @@ def cross_entropy_loss(logits, labels):
 def compute_metrics(logits, labels):
     loss = cross_entropy_loss(logits, labels)
     accuracy = jnp.mean(jnp.argmax(logits, -1) == labels)
-    #top1, top5 = acc_topk(logits, labels, (1, 5))
+    # top1, top5 = acc_topk(logits, labels, (1, 5))
     metrics = {
         'loss': loss,
         'accuracy': accuracy,
@@ -39,6 +39,7 @@ def compute_metrics(logits, labels):
     }
     metrics = jax.lax.pmean(metrics, axis_name='batch')
     return metrics
+
 
 """
 @partial(jax.pmap, axis_name='batch')
@@ -91,16 +92,12 @@ def train_step(state: MyTrainState, batch):
     #  Re-use same axis_name as in the call to `pmap(...train_step,axis=...)` in the train function
     grads = jax.lax.pmean(grads, axis_name='batch')
 
-    new_state = state.apply_gradients(grads=grads, batch_stats=new_model_state['batch_stats'] if 'batch_stats' in new_model_state else None )
+    new_state = state.apply_gradients(grads=grads, batch_stats=new_model_state[
+        'batch_stats'] if 'batch_stats' in new_model_state else None)
     # print(jnp.argmax(on))
     # metric = {"loss": loss, 'delta': jnp.sum(one_hot_labels - logits, axis=1)}
     metrics = compute_metrics(logits, batch['label'])
     return new_state, metrics
-
-
-
-
-
 
 
 class ImageNetTrainer(Trainer):
@@ -141,9 +138,9 @@ class ImageNetTrainer(Trainer):
         with tqdm(total=1000000) as pbar:
             for epoch in range(self.total_epoch):
                 for batch in self.dl:
-                    #x, y = batch['image'],batch['label']
-                    #x, y = torch_to_jax(x), torch_to_jax(y)
-                    #x, y = shard(x), shard(y)
+                    # x, y = batch['image'],batch['label']
+                    # x, y = torch_to_jax(x), torch_to_jax(y)
+                    # x, y = shard(x), shard(y)
                     # print(x.shape)
                     state, metrics = train_step(state, batch)
                     for k, v in metrics.items():
@@ -156,4 +153,4 @@ class ImageNetTrainer(Trainer):
 
 
 if __name__ == "__main__":
-   pass
+    pass

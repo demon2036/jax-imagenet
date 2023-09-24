@@ -44,6 +44,10 @@ class Trainer:
         self.dl = map(prepare_tf_data, ds)
         self.dl=flax.jax_utils.prefetch_to_device(self.dl,2)
 
+        self.steps_per_epoch = (
+                dataset_builder.info.splits['train'].num_examples // config.batch_size
+        )
+
 
         # self.dl = create_input_pipeline(batch_size=batch_size, num_workers=num_workers, dataset_root=data_path,drop_last=drop_last,shuffle_size=shuffle_size)
         self.rng = jax.random.PRNGKey(seed)
@@ -51,3 +55,4 @@ class Trainer:
         self.model_path = model_path
         self.checkpoint_manager = create_checkpoint_manager(model_path, max_to_keep=ckpt_max_to_keep)
         self.finished_steps = 0
+        self.total_steps=self.steps_per_epoch*self.total_epoch

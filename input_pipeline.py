@@ -183,14 +183,14 @@ def preprocess_for_eval(image_bytes, dtype=tf.float32, image_size=IMAGE_SIZE):
     return image
 
 
-def create_split(
+def     create_split(
         dataset_builder,
         batch_size,
         train,
         dtype=tf.float32,
         image_size=IMAGE_SIZE,
         cache=False,
-        shuffle_buffer_size=2_000,
+        shuffle_buffer_size=16 * 1024,
         prefetch=10,
 ):
     """Creates a split from the ImageNet dataset using TensorFlow Datasets.
