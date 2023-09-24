@@ -103,6 +103,22 @@ def train_step(state: MyTrainState, batch, labels):
 
 
 
+
+def prepare_tf_data(xs):
+  """Convert a input batch from tf Tensors to numpy arrays."""
+  local_device_count = jax.local_device_count()
+
+  def _prepare(x):
+    # Use _numpy() for zero-copy conversion between TF and NumPy.
+    x = x._numpy()  # pylint: disable=protected-access
+
+    # reshape (host_batch_size, height, width, 3) to
+    # (local_devices, device_batch_size, height, width, 3)
+    return x.reshape((local_device_count, -1) + x.shape[1:])
+
+  return jax.tree_util.tree_map(_prepare, xs)
+
+
 class ImageNetTrainer(Trainer):
     def __init__(self,
                  state,
@@ -112,6 +128,8 @@ class ImageNetTrainer(Trainer):
         # dataset_builder = tfds.builder('imagenet2012', try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets')
         # dataset_builder = tfds.builder('imagenet2012',try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets' )  # try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets'
         # self.dl = create_split(dataset_builder, batch_size=1024, train=True, cache=True)
+
+        self.dl=self.dl.map(prepare_tf_data,self.dl)
 
         self.state = state
         self.template_ckpt = {'model': self.state, 'steps': self.finished_steps}
@@ -142,9 +160,9 @@ class ImageNetTrainer(Trainer):
         with tqdm(total=1000000) as pbar:
             for epoch in range(self.total_epoch):
                 for batch in self.dl:
-                    x, y = batch['image']._numpy(),batch['label']._numpy()
+                    x, y = batch['image'],batch['label']
                     #x, y = torch_to_jax(x), torch_to_jax(y)
-                    x, y = shard(x), shard(y)
+                    #x, y = shard(x), shard(y)
                     # print(x.shape)
                     state, metrics = train_step(state, x, y)
                     for k, v in metrics.items():
