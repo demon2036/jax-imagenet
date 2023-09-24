@@ -34,12 +34,12 @@ def cross_entropy_loss(logits, labels):
 def compute_metrics(logits, labels):
     loss = cross_entropy_loss(logits, labels)
     accuracy = jnp.mean(jnp.argmax(logits, -1) == labels)
-    top1, top5 = acc_topk(logits, labels, (1, 5))
+    #top1, top5 = acc_topk(logits, labels, (1, 5))
     metrics = {
         'loss': loss,
         'accuracy': accuracy,
-        'top1': top1,
-        'top5': top5,
+        # 'top1': top1,
+        # 'top5': top5,
     }
     metrics = jax.lax.pmean(metrics, axis_name='batch')
     return metrics
@@ -157,9 +157,9 @@ class ImageNetTrainer(Trainer):
                         metrics.update({k: v[0]})
                     pbar.set_postfix(metrics)
                     pbar.update(1)
-                print()
-                if (epoch + 1) % 10 == 0:
-                    self.eval()
+            print()
+            if (epoch + 1) % 10 == 0:
+                self.eval()
 
 
 if __name__ == "__main__":
