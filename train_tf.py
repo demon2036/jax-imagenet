@@ -1,4 +1,6 @@
 import argparse
+
+import flax.jax_utils
 import jax.random
 from modules.state_utils import create_obj_by_config, create_state_by_config, create_state_by_config2
 from modules.utils import read_yaml
@@ -23,4 +25,5 @@ if __name__ == "__main__":
     trainer = ImageNetTrainer(train_state, **config['train'])
 
     trainer.load()
-    trainer.train()
+    trainer.eval()
+    # trainer.train()

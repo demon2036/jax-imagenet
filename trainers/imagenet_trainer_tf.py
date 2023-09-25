@@ -104,8 +104,10 @@ def train_step(state: MyTrainState, batch):
 
 @partial(jax.pmap, axis_name='batch', )
 def eval_step(state, batch):
-    variables = {'params': state.params, 'batch_stats': state.batch_stats}
-    logits = state.apply_fn(variables, batch['image'], train=False, mutable=False)
+    # variables = {'params': state.params, 'batch_stats': state.batch_stats}
+    # logits = state.apply_fn(variables, batch['image'], train=False, mutable=False)
+
+    logits, new_model_state = state.apply_fn({'params': state.params}, batch['image'], mutable=['batch_stats'])
     return compute_metrics(logits, batch['label'])
 
 
@@ -124,6 +126,16 @@ def get_metrics(device_metrics):
     device_metrics = jax.tree_util.tree_map(lambda x: x[0], device_metrics)
     metrics_np = jax.device_get(device_metrics)
     return stack_forest(metrics_np)
+
+
+cross_replica_mean = jax.pmap(lambda x: jax.lax.pmean(x, 'x'), 'x')
+
+
+def sync_batch_stats(state):
+    """Sync the batch statistics across replicas."""
+    # Each device has its own version of the running average batch statistics and
+    # we sync them before evaluation.
+    return state.replace(batch_stats=cross_replica_mean(state.batch_stats))
 
 
 class ImageNetTrainer(Trainer):
@@ -156,10 +168,12 @@ class ImageNetTrainer(Trainer):
         self.checkpoint_manager.save(self.finished_steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
 
     def eval(self):
+        self.state = flax.jax_utils.replicate(self.state)
         eval_metrics = []
         for _ in range(self.steps_per_eval):
-            eval_batch = next(self.dl_eval)
+            eval_batch = next(self.dl)
             metrics = eval_step(self.state, eval_batch)
+            print(metrics)
             eval_metrics.append(metrics)
         eval_metrics = common_utils.get_metrics(eval_metrics)
         summary = jax.tree_util.tree_map(lambda x: x.mean(), eval_metrics)
@@ -184,6 +198,7 @@ class ImageNetTrainer(Trainer):
                     self.finished_steps += 1
                 print()
                 if (epoch + 1) % 10 == 0:
+                    self.state = sync_batch_stats(self.state)
                     self.eval()
                     self.state = flax.jax_utils.unreplicate(self.state)
                     self.save()
