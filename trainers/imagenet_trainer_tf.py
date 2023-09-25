@@ -135,9 +135,10 @@ class ImageNetTrainer(Trainer):
     def train(self):
         state = flax.jax_utils.replicate(self.state)
 
-        with tqdm(total=1000000) as pbar:
+        with tqdm(total=self.total_epoch*self.steps_per_epoch) as pbar:
             for epoch in range(self.total_epoch):
-                for batch in self.dl:
+                for _ in range(self.steps_per_epoch):
+                    batch = next(self.dl)
                     # x, y = batch['image'],batch['label']
                     # x, y = torch_to_jax(x), torch_to_jax(y)
                     # x, y = shard(x), shard(y)
