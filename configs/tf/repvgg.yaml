@@ -12,7 +12,7 @@
     target: modules.state_utils.MyTrainState,
     Input_Shape: [ [ 1,224,224,3 ], ],
     Model: {
-      target: repvgg.RepVGG_A2,
+      target: model.repvgg.RepVGG_A2,
       params: {
         num_classes: 1000
       }
