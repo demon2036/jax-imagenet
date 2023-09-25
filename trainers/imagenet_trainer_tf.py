@@ -181,9 +181,9 @@ class ImageNetTrainer(Trainer):
                         metrics.update({k: v[0]})
                     pbar.set_postfix(metrics)
                     pbar.update(1)
-            print()
+                print()
 
-            self.eval()
+                self.eval()
 
             # if (epoch + 1) % 10 == 0:
             #     self.eval()
