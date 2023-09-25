@@ -10,14 +10,14 @@ from typing import Any, Sequence
 class RepVGGBlock(nn.Module):
     channels: int = 1
     strides: int = 1
-    norm: Any = None
+    norm: Any = None  # partial(nn.BatchNorm, use_running_average=not True, )
     deploy: bool = False
     dtype: Any = jnp.bfloat16
 
     def setup(self) -> None:
-        self.conv_3x3 = nn.Conv(self.channels, (3, 3), (self.strides, self.strides), padding='valid', name='conv_3x3',
+        self.conv_3x3 = nn.Conv(self.channels, (3, 3), (self.strides, self.strides), padding='valid', name='conv_3x3',use_bias=False,
                                 dtype=self.dtype)
-        self.conv_1x1 = nn.Conv(self.channels, (1, 1), (self.strides, self.strides), padding='same', name='conv_1x1',
+        self.conv_1x1 = nn.Conv(self.channels, (1, 1), (self.strides, self.strides), padding='same', name='conv_1x1',use_bias=False,
                                 dtype=self.dtype)
         self.bn_3x3 = self.norm(name='bn_3x3', )
         self.bn_1x1 = self.norm(name='bn_1x1', )
@@ -38,14 +38,14 @@ class RepVGGBlock(nn.Module):
             x = self.bn_3x3(self.conv_3x3(jnp.pad(x, padding, constant_values=0)), ) + self.bn_1x1(
                 self.conv_1x1(x)) + identity_out
 
-        return nn.relu(x)
+        return  nn.relu(x)
 
 
 class RepVGG(nn.Module):
     deploy: bool = False
     out_channels: Sequence[int] = (64, 128, 256, 512)
     width_multiplier: Sequence[int] = (0.75, 0.75, 0.75, 2.5)
-    num_blocks: Sequence[int] = (1,)  # (2, 4, 14, 1)
+    num_blocks: Sequence[int] = (2,)  # (2, 4, 14, 1)
     num_classes: int = 1000
     dtype: Any = jnp.bfloat16
 
@@ -55,7 +55,7 @@ class RepVGG(nn.Module):
             nn.BatchNorm,
             use_running_average=not train,
             momentum=0.9,
-            epsilon=1e-6,
+            epsilon=1e-5,
             dtype=self.dtype,
             # axis_name='batch',
         )
@@ -65,12 +65,12 @@ class RepVGG(nn.Module):
 
         for width_mul, num_blocks, out_channel in zip(self.width_multiplier, self.num_blocks, self.out_channels):
             out_channels = int(out_channel * width_mul)
-            x = RepVGGBlock(channels=out_channels, strides=2, norm=norm, deploy=self.deploy,dtype=self.dtype)(x)
+            x = RepVGGBlock(channels=out_channels, strides=2, norm=norm, deploy=self.deploy, dtype=self.dtype)(x)
             for _ in range(num_blocks - 1):
-                x = RepVGGBlock(channels=out_channels, strides=1, norm=norm, deploy=self.deploy,dtype=self.dtype)(x)
+                x = RepVGGBlock(channels=out_channels, strides=1, norm=norm, deploy=self.deploy, dtype=self.dtype)(x)
 
         x = jnp.mean(x, axis=[1, 2])
-        x = nn.Dense(self.num_classes,name='classifier',dtype=self.dtype)(x)
+        x = nn.Dense(self.num_classes, name='classifier', dtype=self.dtype)(x)
         return x
 
 
