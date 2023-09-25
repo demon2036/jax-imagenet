@@ -57,7 +57,7 @@ class RepVGG(nn.Module):
             momentum=0.9,
             epsilon=1e-5,
             dtype=self.dtype,
-            # axis_name='batch',
+            axis_name='batch',
         )
 
         x = RepVGGBlock(channels=min(64, int(64 * self.width_multiplier[0])), strides=2, norm=norm, deploy=self.deploy,

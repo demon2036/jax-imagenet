@@ -1,3 +1,4 @@
+import functools
 import os
 from functools import partial
 
@@ -43,6 +44,41 @@ def compute_metrics(logits, labels):
     return metrics
 
 
+def train_step(state, batch):
+    """Perform a single training step."""
+
+    def loss_fn(params):
+        """loss function used for training."""
+        logits, new_model_state = state.apply_fn(
+            {'params': params, 'batch_stats': state.batch_stats},
+            batch['image'],
+            mutable=['batch_stats'],
+        )
+        loss = cross_entropy_loss(logits, batch['label'])
+        weight_penalty_params = jax.tree_util.tree_leaves(params)
+        weight_decay = 0.0001
+        weight_l2 = sum(
+            jnp.sum(x ** 2) for x in weight_penalty_params if x.ndim > 1
+        )
+        weight_penalty = weight_decay * 0.5 * weight_l2
+        loss = loss + weight_penalty
+        return loss, (new_model_state, logits)
+
+    step = state.step
+
+    grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
+    aux, grads = grad_fn(state.params)
+    # Re-use same axis_name as in the call to `pmap(...train_step...)` below.
+    grads = lax.pmean(grads, axis_name='batch')
+    new_model_state, logits = aux[1]
+    metrics = compute_metrics(logits, batch['label'])
+    new_state = state.apply_gradients(
+        grads=grads, batch_stats=new_model_state['batch_stats']
+    )
+
+    return new_state, metrics
+
+
 """
 @partial(jax.pmap, axis_name='batch')
 def train_step(state: MyTrainState, batch, labels):
@@ -70,7 +106,7 @@ def train_step(state: MyTrainState, batch, labels):
     # metric = {"loss": loss, 'delta': jnp.sum(one_hot_labels - logits, axis=1)}
     metrics = compute_metrics(logits, labels)
     return new_state, metrics
-"""
+
 
 
 @partial(jax.pmap, axis_name='batch')
@@ -95,16 +131,31 @@ def train_step(state: MyTrainState, batch):
     grads = jax.lax.pmean(grads, axis_name='batch')
 
     new_state = state.apply_gradients(grads=grads, batch_stats=new_model_state[
-        'batch_stats'] if 'batch_stats' in new_model_state else None)
+        'batch_stats'])  # if 'batch_stats' in new_model_state else None
+
+    new_state = new_state.replace(batch_stats=new_model_state['batch_stats'])
+
     # print(jnp.argmax(on))
     # metric = {"loss": loss, 'delta': jnp.sum(one_hot_labels - logits, axis=1)}
     metrics = compute_metrics(logits, batch['label'])
     return new_state, metrics
+"""
 
 
 @partial(jax.pmap, axis_name='batch', )
 def eval_step(state, batch):
     variables = {'params': state.params, 'batch_stats': state.batch_stats}
+    logits = state.apply_fn(variables, batch['image'], train=False, mutable=False)
+
+    logits, new_model_state = state.apply_fn({'params': state.params}, batch['image'], mutable=['batch_stats'])
+    return compute_metrics(logits, batch['label'])
+
+
+def eval_step2(state, batch):
+    variables = {'params': state.params, 'batch_stats': state.batch_stats}
+
+    print(batch['image'].shape)
+
     logits = state.apply_fn(variables, batch['image'], train=False, mutable=False)
 
     # logits, new_model_state = state.apply_fn({'params': state.params}, batch['image'], mutable=['batch_stats'])
@@ -169,14 +220,27 @@ class ImageNetTrainer(Trainer):
 
     def eval(self):
         eval_metrics = []
-        for _ in range(self.steps_per_eval):
+        for _ in range(1):  # self.steps_per_eval
             eval_batch = next(self.dl)
-            metrics = eval_step(self.state, eval_batch)
-            print(metrics)
+            metrics = eval_step(self.state, flax.jax_utils.unreplicate(eval_batch))
+            # print(metrics)
             eval_metrics.append(metrics)
         eval_metrics = common_utils.get_metrics(eval_metrics)
         summary = jax.tree_util.tree_map(lambda x: x.mean(), eval_metrics)
         print(summary)
+
+    def test(self):
+        self.state = flax.jax_utils.replicate(self.state)
+        eval_metrics = []
+        for _ in range(1):  # self.steps_per_eval
+            eval_batch = next(self.dl)
+            metrics = eval_step2(self.state, eval_batch)
+            # print(metrics)
+            eval_metrics.append(metrics)
+        eval_metrics = common_utils.get_metrics(eval_metrics)
+        summary = jax.tree_util.tree_map(lambda x: x.mean(), eval_metrics)
+        print(summary)
+        self.state = flax.jax_utils.unreplicate(self.state)
 
     def train(self):
         self.state = flax.jax_utils.replicate(self.state)
@@ -196,7 +260,8 @@ class ImageNetTrainer(Trainer):
                     pbar.update(1)
                     self.finished_steps += 1
                 print()
-                if (epoch + 1) % 10 == 0:
+
+                if (epoch + 1) % 5 == 0:
                     self.state = sync_batch_stats(self.state)
                     self.eval()
                     self.state = flax.jax_utils.unreplicate(self.state)
