@@ -25,5 +25,5 @@ if __name__ == "__main__":
     trainer = ImageNetTrainer(train_state, **config['train'])
 
     trainer.load()
-    trainer.eval()
-    # trainer.train()
+    # trainer.eval()
+    trainer.train()
