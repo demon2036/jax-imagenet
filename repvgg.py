@@ -9,19 +9,22 @@ from typing import Any, Sequence
 
 class RepVGGBlock(nn.Module):
     channels: int = 1
-    strides: int = 2
+    strides: int = 1
     norm: Any = None
     deploy: bool = False
+    dtype: Any = jnp.bfloat16
 
     def setup(self) -> None:
-        self.conv_3x3 = nn.Conv(self.channels, (3, 3), (self.strides, self.strides), padding='valid', name='conv_3x3', )
-        self.conv_1x1 = nn.Conv(self.channels, (1, 1), (self.strides, self.strides), padding='same', name='conv_1x1', )
-        self.bn_3x3 = self.norm(name='bn_3x3')
-        self.bn_1x1 = self.norm(name='bn_1x1')
+        self.conv_3x3 = nn.Conv(self.channels, (3, 3), (self.strides, self.strides), padding='valid', name='conv_3x3',
+                                dtype=self.dtype)
+        self.conv_1x1 = nn.Conv(self.channels, (1, 1), (self.strides, self.strides), padding='same', name='conv_1x1',
+                                dtype=self.dtype)
+        self.bn_3x3 = self.norm(name='bn_3x3', )
+        self.bn_1x1 = self.norm(name='bn_1x1', )
         # self.identity_bn = self.norm(name='identity_bn') if self.strides == 1 else None
 
         self.conv_deploy = nn.Conv(self.channels, (3, 3), (self.strides, self.strides), padding='valid',
-                                   name='conv_deploy', )
+                                   name='conv_deploy', dtype=self.dtype)
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
@@ -42,7 +45,7 @@ class RepVGG(nn.Module):
     deploy: bool = False
     out_channels: Sequence[int] = (64, 128, 256, 512)
     width_multiplier: Sequence[int] = (0.75, 0.75, 0.75, 2.5)
-    num_blocks: Sequence[int] = (2, 4, 14, 1)
+    num_blocks: Sequence[int] = (1,)  # (2, 4, 14, 1)
     num_classes: int = 1000
 
     @nn.compact
@@ -52,27 +55,24 @@ class RepVGG(nn.Module):
             use_running_average=not train,
             momentum=0.9,
             epsilon=1e-6,
-            # dtype=self.dtype,
+            dtype=self.dtype,
             # axis_name='batch',
         )
 
-        x = RepVGGBlock(channels=min(64, int(64 * self.width_multiplier[0])), strides=2, norm=norm, deploy=self.deploy)(
-            x)
+        x = RepVGGBlock(channels=min(64, int(64 * self.width_multiplier[0])), strides=2, norm=norm, deploy=self.deploy,
+                        dtype=self.dtype)(x)
 
         for width_mul, num_blocks, out_channel in zip(self.width_multiplier, self.num_blocks, self.out_channels):
             out_channels = int(out_channel * width_mul)
-            x = RepVGGBlock(channels=out_channels, strides=2, norm=norm, deploy=self.deploy)(x)
+            x = RepVGGBlock(channels=out_channels, strides=2, norm=norm, deploy=self.deploy,dtype=self.dtype)(x)
             for _ in range(num_blocks - 1):
-                x = RepVGGBlock(channels=out_channels, strides=1, norm=norm, deploy=self.deploy)(x)
+                x = RepVGGBlock(channels=out_channels, strides=1, norm=norm, deploy=self.deploy,dtype=self.dtype)(x)
 
         x = jnp.mean(x, axis=[1, 2])
-        x = nn.Dense(self.num_classes)(x)
-
+        x = nn.Dense(self.num_classes,name='classifier',dtype=self.dtype)(x)
         return x
 
 
 RepVGG_A0 = partial(RepVGG, num_blocks=[2, 4, 14, 1], width_multiplier=[0.75, 0.75, 0.75, 2.5])
 RepVGG_A1 = partial(RepVGG, num_blocks=[2, 4, 14, 1], width_multiplier=[1, 1, 1, 2.5])
 RepVGG_A2 = partial(RepVGG, num_blocks=[2, 4, 14, 1], width_multiplier=[1.5, 1.5, 1.5, 2.75])
-
-
