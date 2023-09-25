@@ -183,10 +183,6 @@ class ImageNetTrainer(Trainer):
                     pbar.update(1)
                     self.finished_steps += 1
 
-                    self.eval()
-                    self.state = flax.jax_utils.unreplicate(self.state)
-                    self.save()
-                    self.state = flax.jax_utils.replicate(self.state)
 
                 if (epoch + 1) % 10 == 0:
                     self.eval()
