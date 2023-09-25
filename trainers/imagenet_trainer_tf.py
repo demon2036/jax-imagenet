@@ -43,7 +43,7 @@ def compute_metrics(logits, labels):
     metrics = jax.lax.pmean(metrics, axis_name='batch')
     return metrics
 
-
+"""
 @partial(jax.pmap, axis_name='batch', )
 def train_step(state, batch):
     """Perform a single training step."""
@@ -78,7 +78,7 @@ def train_step(state, batch):
     )
 
     return new_state, metrics
-
+"""
 
 """
 @partial(jax.pmap, axis_name='batch')
@@ -108,7 +108,7 @@ def train_step(state: MyTrainState, batch, labels):
     metrics = compute_metrics(logits, labels)
     return new_state, metrics
 
-
+"""
 
 @partial(jax.pmap, axis_name='batch')
 def train_step(state: MyTrainState, batch):
@@ -134,13 +134,9 @@ def train_step(state: MyTrainState, batch):
     new_state = state.apply_gradients(grads=grads, batch_stats=new_model_state[
         'batch_stats'])  # if 'batch_stats' in new_model_state else None
 
-    new_state = new_state.replace(batch_stats=new_model_state['batch_stats'])
-
-    # print(jnp.argmax(on))
-    # metric = {"loss": loss, 'delta': jnp.sum(one_hot_labels - logits, axis=1)}
     metrics = compute_metrics(logits, batch['label'])
     return new_state, metrics
-"""
+
 
 
 @partial(jax.pmap, axis_name='batch', )
