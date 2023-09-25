@@ -43,6 +43,7 @@ def compute_metrics(logits, labels):
     metrics = jax.lax.pmean(metrics, axis_name='batch')
     return metrics
 
+
 @partial(jax.pmap, axis_name='batch', )
 def train_step(state, batch):
     """Perform a single training step."""
@@ -69,7 +70,7 @@ def train_step(state, batch):
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
     aux, grads = grad_fn(state.params)
     # Re-use same axis_name as in the call to `pmap(...train_step...)` below.
-    grads = lax.pmean(grads, axis_name='batch')
+    grads = jax.lax.pmean(grads, axis_name='batch')
     new_model_state, logits = aux[1]
     metrics = compute_metrics(logits, batch['label'])
     new_state = state.apply_gradients(
