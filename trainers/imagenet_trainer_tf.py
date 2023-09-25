@@ -223,7 +223,7 @@ class ImageNetTrainer(Trainer):
         eval_metrics = []
         for _ in range(1):  # self.steps_per_eval
             eval_batch = next(self.dl)
-            metrics = eval_step(self.state, flax.jax_utils.unreplicate(eval_batch))
+            metrics = eval_step(self.state, eval_batch)
             # print(metrics)
             eval_metrics.append(metrics)
         eval_metrics = common_utils.get_metrics(eval_metrics)
