@@ -27,5 +27,5 @@ if __name__ == "__main__":
     trainer.load()
     # trainer.state=flax.jax_utils.replicate(trainer.state)
     # trainer.eval()
-    # trainer.train()
-    trainer.test()
+    trainer.train()
+    # trainer.test()
