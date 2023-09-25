@@ -165,6 +165,11 @@ class ImageNetTrainer(Trainer):
         summary = jax.tree_util.tree_map(lambda x: x.mean(), eval_metrics)
         print(summary)
 
+
+    def save(self):
+
+
+
     def train(self):
         self.state = flax.jax_utils.replicate(self.state)
 
@@ -181,10 +186,14 @@ class ImageNetTrainer(Trainer):
                         metrics.update({k: v[0]})
                     pbar.set_postfix(metrics)
                     pbar.update(1)
+                    self.finished_steps+=1
 
                 self.eval()
                 if (epoch + 1) % 10 == 0:
                     self.eval()
+                    self.state=flax.jax_utils.unreplicate(self.state)
+                    self.save()
+                    self.state=flax.jax_utils.replicate(self.state)
 
 
 if __name__ == "__main__":
