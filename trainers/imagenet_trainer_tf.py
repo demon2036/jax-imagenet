@@ -46,10 +46,10 @@ def compute_metrics(logits, labels):
 """
 @partial(jax.pmap, axis_name='batch', )
 def train_step(state, batch):
-    """Perform a single training step."""
+
 
     def loss_fn(params):
-        """loss function used for training."""
+      
         logits, new_model_state = state.apply_fn(
             {'params': params, 'batch_stats': state.batch_stats},
             batch['image'],
@@ -78,9 +78,7 @@ def train_step(state, batch):
     )
 
     return new_state, metrics
-"""
 
-"""
 @partial(jax.pmap, axis_name='batch')
 def train_step(state: MyTrainState, batch, labels):
     def loss_fn(params):
