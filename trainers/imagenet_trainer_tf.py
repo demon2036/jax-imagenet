@@ -166,7 +166,7 @@ class ImageNetTrainer(Trainer):
         print(summary)
 
     def train(self):
-        state = flax.jax_utils.replicate(self.state)
+        self.state = flax.jax_utils.replicate(self.state)
 
         with tqdm(total=self.total_epoch * self.steps_per_epoch) as pbar:
             for epoch in range(self.total_epoch):
@@ -176,17 +176,15 @@ class ImageNetTrainer(Trainer):
                     # x, y = torch_to_jax(x), torch_to_jax(y)
                     # x, y = shard(x), shard(y)
                     # print(x.shape)
-                    state, metrics = train_step(state, batch)
+                    self.state, metrics = train_step(self.state, batch)
                     for k, v in metrics.items():
                         metrics.update({k: v[0]})
                     pbar.set_postfix(metrics)
                     pbar.update(1)
-                print()
-                self.state=state
-                self.eval()
 
-            # if (epoch + 1) % 10 == 0:
-            #     self.eval()
+                self.eval()
+                if (epoch + 1) % 10 == 0:
+                    self.eval()
 
 
 if __name__ == "__main__":
