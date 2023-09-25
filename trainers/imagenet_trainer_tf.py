@@ -142,7 +142,7 @@ def eval_step(state, batch):
     variables = {'params': state.params, 'batch_stats': state.batch_stats}
     logits = state.apply_fn(variables, batch['image'], train=False, mutable=False)
 
-    logits, new_model_state = state.apply_fn({'params': state.params}, batch['image'], mutable=['batch_stats'])
+    # logits, new_model_state = state.apply_fn({'params': state.params}, batch['image'], mutable=['batch_stats'])
     return compute_metrics(logits, batch['label'])
 
 
