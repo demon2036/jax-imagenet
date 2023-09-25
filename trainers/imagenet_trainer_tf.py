@@ -182,7 +182,7 @@ class ImageNetTrainer(Trainer):
                     pbar.set_postfix(metrics)
                     pbar.update(1)
                 print()
-
+                self.state=state
                 self.eval()
 
             # if (epoch + 1) % 10 == 0:
