@@ -168,7 +168,6 @@ class ImageNetTrainer(Trainer):
         self.checkpoint_manager.save(self.finished_steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
 
     def eval(self):
-        self.state = flax.jax_utils.replicate(self.state)
         eval_metrics = []
         for _ in range(self.steps_per_eval):
             eval_batch = next(self.dl)
