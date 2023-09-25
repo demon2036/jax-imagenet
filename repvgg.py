@@ -47,6 +47,7 @@ class RepVGG(nn.Module):
     width_multiplier: Sequence[int] = (0.75, 0.75, 0.75, 2.5)
     num_blocks: Sequence[int] = (1,)  # (2, 4, 14, 1)
     num_classes: int = 1000
+    dtype: Any = jnp.bfloat16
 
     @nn.compact
     def __call__(self, x, train=True, *args, **kwargs):
