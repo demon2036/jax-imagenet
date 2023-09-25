@@ -166,9 +166,6 @@ class ImageNetTrainer(Trainer):
         print(summary)
 
 
-    def save(self):
-
-
 
     def train(self):
         self.state = flax.jax_utils.replicate(self.state)
