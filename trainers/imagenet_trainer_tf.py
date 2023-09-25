@@ -43,7 +43,7 @@ def compute_metrics(logits, labels):
     metrics = jax.lax.pmean(metrics, axis_name='batch')
     return metrics
 
-
+@partial(jax.pmap, axis_name='batch', )
 def train_step(state, batch):
     """Perform a single training step."""
 
