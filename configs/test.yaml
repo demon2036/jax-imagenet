@@ -12,7 +12,7 @@
     target: modules.state_utils.MyTrainState,
     Input_Shape: [ [ 1,224,224,3 ], ],
     Model: {
-      target: model.repvgg.RepVGG_A2,
+      target: model.convnext.ConvNext_B,
 #      target: model2.ResNet50,
       params: {
         dtype: float32
