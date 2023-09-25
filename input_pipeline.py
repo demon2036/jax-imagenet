@@ -233,6 +233,7 @@ def create_split(
     )
     options = tf.data.Options()
     options.threading.private_threadpool_size = 96
+    # print(options.threading.private_threadpool_size)
     ds = ds.with_options(options)
 
     if cache:
