@@ -35,7 +35,7 @@ class RepVGGBlock(nn.Module):
             x = self.bn_3x3(self.conv_3x3(jnp.pad(x, padding, constant_values=0)), ) + self.bn_1x1(
                 self.conv_1x1(x)) + identity_out
 
-        return x
+        return nn.relu(x)
 
 
 class RepVGG(nn.Module):
