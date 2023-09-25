@@ -1,10 +1,10 @@
 import argparse
 import jax.random
-from modules.state_utils import create_obj_by_config, create_state_by_config, create_state_by_config2
+from modules.state_utils import create_state_by_config2
 from modules.utils import read_yaml
 import os
 from jax_smi import initialise_tracking
-from trainers.imagenet_trainer import ImageNetTrainer
+from trainers.deprecated.imagenet_trainer import ImageNetTrainer
 
 initialise_tracking()
 

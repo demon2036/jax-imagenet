@@ -8,7 +8,7 @@ from tqdm import tqdm
 from flax.training import orbax_utils, common_utils
 
 from modules.utils import create_checkpoint_manager, default, load_ckpt, torch_to_jax
-from trainers.basic_trainer import Trainer
+from trainers.deprecated.basic_trainer import Trainer
 from modules.state_utils import *
 
 NUM_CLASSES = 1000

@@ -1,5 +1,7 @@
 import os
 from functools import partial
+
+import jax
 import tensorflow_datasets as tfds
 import flax
 import flax.jax_utils
@@ -100,6 +102,30 @@ def train_step(state: MyTrainState, batch):
     return new_state, metrics
 
 
+@partial(jax.pmap, axis_name='batch', )
+def eval_step(state, batch):
+    variables = {'params': state.params, 'batch_stats': state.batch_stats}
+    logits = state.apply_fn(variables, batch['image'], train=False, mutable=False)
+    return compute_metrics(logits, batch['label'])
+
+
+def get_metrics(device_metrics):
+    """Helper utility for pmap, gathering replicated timeseries metric data.
+
+  Args:
+   device_metrics: replicated, device-resident pytree of metric data,
+     whose leaves are presumed to be a sequence of arrays recorded over time.
+  Returns:
+   A pytree of unreplicated, host-resident, stacked-over-time arrays useful for
+   computing host-local statistics and logging.
+  """
+    # We select the first element of x in order to get a single copy of a
+    # device-replicated metric.
+    device_metrics = jax.tree_util.tree_map(lambda x: x[0], device_metrics)
+    metrics_np = jax.device_get(device_metrics)
+    return stack_forest(metrics_np)
+
+
 class ImageNetTrainer(Trainer):
     def __init__(self,
                  state,
@@ -130,12 +156,19 @@ class ImageNetTrainer(Trainer):
         self.checkpoint_manager.save(self.finished_steps, model_ckpt, save_kwargs={'save_args': save_args}, force=False)
 
     def eval(self):
-        pass
+        eval_metrics = []
+        for _ in range(self.steps_per_eval):
+            eval_batch = next(self.dl_eval)
+            metrics = eval_step(self.state, eval_batch)
+            eval_metrics.append(metrics)
+        eval_metrics = common_utils.get_metrics(eval_metrics)
+        summary = jax.tree_util.tree_map(lambda x: x.mean(), eval_metrics)
+        print(summary)
 
     def train(self):
         state = flax.jax_utils.replicate(self.state)
 
-        with tqdm(total=self.total_epoch*self.steps_per_epoch) as pbar:
+        with tqdm(total=self.total_epoch * self.steps_per_epoch) as pbar:
             for epoch in range(self.total_epoch):
                 for _ in range(self.steps_per_epoch):
                     batch = next(self.dl)
@@ -149,8 +182,11 @@ class ImageNetTrainer(Trainer):
                     pbar.set_postfix(metrics)
                     pbar.update(1)
             print()
-            if (epoch + 1) % 10 == 0:
-                self.eval()
+
+            self.eval()
+
+            # if (epoch + 1) % 10 == 0:
+            #     self.eval()
 
 
 if __name__ == "__main__":

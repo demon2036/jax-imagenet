@@ -11,6 +11,7 @@ from modules.utils import create_checkpoint_manager
 def prepare_tf_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
     local_device_count = jax.local_device_count()
+
     def _prepare(x):
         # Use _numpy() for zero-copy conversion between TF and NumPy.
         x = x._numpy()  # pylint: disable=protected-access
@@ -39,20 +40,22 @@ class Trainer:
         # 'gs://jtitor-eu/data/tensorflow_datasets'
         dataset_builder = tfds.builder('imagenet2012', try_gcs=try_gcs,
                                        data_dir=data_path)  # try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets'
-        ds = create_split(dataset_builder, batch_size=batch_size, train=True, cache=True)
+        ds_train = create_split(dataset_builder, batch_size=batch_size, train=True, cache=True)
+        ds_eval = create_split(dataset_builder, batch_size=batch_size, train=True, cache=True)
 
-        self.dl = map(prepare_tf_data, ds)
-        self.dl=flax.jax_utils.prefetch_to_device(self.dl,2)
+        self.dl = map(prepare_tf_data, ds_train)
+        self.dl = flax.jax_utils.prefetch_to_device(self.dl, 2)
+        self.dl_eval = map(prepare_tf_data, ds_eval)
 
-        self.steps_per_epoch = (
-                dataset_builder.info.splits['train'].num_examples // batch_size
-        )
+        num_validation_examples = dataset_builder.info.splits[
+            'validation'
+        ].num_examples
+        self.steps_per_eval = num_validation_examples // batch_size
 
-
-        # self.dl = create_input_pipeline(batch_size=batch_size, num_workers=num_workers, dataset_root=data_path,drop_last=drop_last,shuffle_size=shuffle_size)
         self.rng = jax.random.PRNGKey(seed)
         self.total_epoch = total_epoch
         self.model_path = model_path
         self.checkpoint_manager = create_checkpoint_manager(model_path, max_to_keep=ckpt_max_to_keep)
         self.finished_steps = 0
-        self.total_steps=self.steps_per_epoch*self.total_epoch
+        self.steps_per_epoch = dataset_builder.info.splits['train'].num_examples // batch_size
+        self.total_steps = self.steps_per_epoch * self.total_epoch
