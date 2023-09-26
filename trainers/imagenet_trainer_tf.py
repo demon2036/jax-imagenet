@@ -114,7 +114,7 @@ def train_step(state, batch):
 @partial(jax.pmap, axis_name='batch')
 def train_step(state: MyTrainState, batch):
     def loss_fn(params):
-        logits, new_model_state = state.apply_fn({'params': params}, batch['image'], mutable=['batch_stats'])
+        logits, new_model_state = state.apply_fn({'params': params,'batch_stats': state.batch_stats}, batch['image'], mutable=['batch_stats'])
         loss = cross_entropy_loss(logits, batch['label'])
         weight_penalty_params = jax.tree_util.tree_leaves(params)
         weight_decay = 0.0001
