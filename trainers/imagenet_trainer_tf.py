@@ -43,7 +43,8 @@ def compute_metrics(logits, labels):
     metrics = jax.lax.pmean(metrics, axis_name='batch')
     return metrics
 
-"""
+
+
 @partial(jax.pmap, axis_name='batch', )
 def train_step(state, batch):
 
@@ -78,7 +79,7 @@ def train_step(state, batch):
     )
 
     return new_state, metrics
-
+"""
 @partial(jax.pmap, axis_name='batch')
 def train_step(state: MyTrainState, batch, labels):
     def loss_fn(params):
@@ -106,7 +107,8 @@ def train_step(state: MyTrainState, batch, labels):
     metrics = compute_metrics(logits, labels)
     return new_state, metrics
 
-"""
+
+
 
 @partial(jax.pmap, axis_name='batch')
 def train_step(state: MyTrainState, batch):
@@ -134,8 +136,7 @@ def train_step(state: MyTrainState, batch):
 
     metrics = compute_metrics(logits, batch['label'])
     return new_state, metrics
-
-
+"""
 
 @partial(jax.pmap, axis_name='batch', )
 def eval_step(state, batch):
