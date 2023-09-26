@@ -125,7 +125,7 @@ def train_step(state: MyTrainState, batch):
         )
         weight_penalty = weight_decay * 0.5 * weight_l2
         loss = loss + weight_penalty
-        return loss, ( logits,new_model_state)
+        return loss, (new_model_state, logits)
     """
     def loss_fn(params):
         logits, new_model_state = state.apply_fn({'params': params}, batch['image'], mutable=['batch_stats'])
@@ -155,7 +155,7 @@ def train_step(state: MyTrainState, batch):
     aux, grads = grad_fn(state.params)
     # Re-use same axis_name as in the call to `pmap(...train_step...)` below.
     grads = jax.lax.pmean(grads, axis_name='batch')
-    logits,new_model_state = aux[1]
+    new_model_state, logits = aux[1]
     metrics = compute_metrics(logits, batch['label'])
     new_state = state.apply_gradients(
         grads=grads, batch_stats=new_model_state['batch_stats']
