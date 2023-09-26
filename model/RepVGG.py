@@ -77,3 +77,7 @@ class RepVGG(nn.Module):
 RepVGG_A0 = partial(RepVGG, num_blocks=[2, 4, 14, 1], width_multiplier=[0.75, 0.75, 0.75, 2.5])
 RepVGG_A1 = partial(RepVGG, num_blocks=[2, 4, 14, 1], width_multiplier=[1, 1, 1, 2.5])
 RepVGG_A2 = partial(RepVGG, num_blocks=[2, 4, 14, 1], width_multiplier=[1.5, 1.5, 1.5, 2.75])
+RepVGG_B0 = partial(RepVGG, num_blocks=[2, 4, 14, 1], width_multiplier=[1, 1, 1, 2.5])
+RepVGG_B1 = partial(RepVGG, num_blocks=[2, 4, 16, 1], width_multiplier=[2, 2, 2, 4])
+RepVGG_B2 = partial(RepVGG, num_blocks=[2, 4, 16, 1], width_multiplier=[2.5, 2.5, 2.5, 5])
+RepVGG_B3 = partial(RepVGG, num_blocks=[2, 4, 16, 1], width_multiplier=[3,3,3,5 ])
