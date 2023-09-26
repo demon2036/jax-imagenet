@@ -44,11 +44,9 @@ def compute_metrics(logits, labels):
     return metrics
 
 
-
+"""
 @partial(jax.pmap, axis_name='batch', )
 def train_step(state, batch):
-
-
     def loss_fn(params):
       
         logits, new_model_state = state.apply_fn(
@@ -79,7 +77,7 @@ def train_step(state, batch):
     )
 
     return new_state, metrics
-"""
+
 @partial(jax.pmap, axis_name='batch')
 def train_step(state: MyTrainState, batch, labels):
     def loss_fn(params):
@@ -107,7 +105,7 @@ def train_step(state: MyTrainState, batch, labels):
     metrics = compute_metrics(logits, labels)
     return new_state, metrics
 
-
+"""
 
 
 @partial(jax.pmap, axis_name='batch')
@@ -136,7 +134,7 @@ def train_step(state: MyTrainState, batch):
 
     metrics = compute_metrics(logits, batch['label'])
     return new_state, metrics
-"""
+
 
 @partial(jax.pmap, axis_name='batch', )
 def eval_step(state, batch):
@@ -147,15 +145,7 @@ def eval_step(state, batch):
     return compute_metrics(logits, batch['label'])
 
 
-def eval_step2(state, batch):
-    variables = {'params': state.params, 'batch_stats': state.batch_stats}
 
-    print(batch['image'].shape)
-
-    logits = state.apply_fn(variables, batch['image'], train=False, mutable=False)
-
-    # logits, new_model_state = state.apply_fn({'params': state.params}, batch['image'], mutable=['batch_stats'])
-    return compute_metrics(logits, batch['label'])
 
 
 def get_metrics(device_metrics):
@@ -230,7 +220,7 @@ class ImageNetTrainer(Trainer):
         eval_metrics = []
         for _ in range(1):  # self.steps_per_eval
             eval_batch = next(self.dl)
-            metrics = eval_step2(self.state, eval_batch)
+            metrics = eval_step(self.state, eval_batch)
             # print(metrics)
             eval_metrics.append(metrics)
         eval_metrics = common_utils.get_metrics(eval_metrics)
