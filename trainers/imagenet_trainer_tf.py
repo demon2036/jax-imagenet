@@ -17,7 +17,6 @@ from modules.state_utils import *
 
 NUM_CLASSES = 1000
 
-
 """"
 
 @partial(jax.pmap, axis_name='batch')
@@ -48,6 +47,7 @@ def train_step(state: MyTrainState, batch, labels):
     return new_state, metrics
 
 """
+
 
 def acc_topk(logits, labels, topk=(1,)):
     top = jax.lax.top_k(logits, max(topk))[1].transpose()
@@ -109,6 +109,8 @@ def train_step(state, batch):
 
     return new_state, metrics
 """
+
+
 @partial(jax.pmap, axis_name='batch')
 def train_step(state: MyTrainState, batch):
     def loss_fn(params):
@@ -126,6 +128,7 @@ def train_step(state: MyTrainState, batch):
         weight_penalty = weight_decay * 0.5 * weight_l2
         loss = loss + weight_penalty
         return loss, (new_model_state, logits)
+
     """
     def loss_fn(params):
         logits, new_model_state = state.apply_fn({'params': params}, batch['image'], mutable=['batch_stats'])
@@ -157,10 +160,8 @@ def train_step(state: MyTrainState, batch):
     grads = jax.lax.pmean(grads, axis_name='batch')
     new_model_state, logits = aux[1]
     metrics = compute_metrics(logits, batch['label'])
-    new_state = state.apply_gradients(
-        grads=grads, batch_stats=new_model_state['batch_stats']
-    )
-
+    new_state = state.apply_gradients(grads=grads, batch_stats=new_model_state[
+        'batch_stats'])
 
     return new_state, metrics
 
@@ -172,9 +173,6 @@ def eval_step(state, batch):
 
     # logits, new_model_state = state.apply_fn({'params': state.params}, batch['image'], mutable=['batch_stats'])
     return compute_metrics(logits, batch['label'])
-
-
-
 
 
 def get_metrics(device_metrics):
