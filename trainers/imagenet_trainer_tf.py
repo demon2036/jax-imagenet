@@ -125,7 +125,7 @@ def train_step(state: MyTrainState, batch):
         loss = loss + weight_penalty
         # one_hot_labels = common_utils.onehot(labels, num_classes=NUM_CLASSES)
 
-        return loss, (new_model_state,logits, )
+        return loss, (new_model_state,logits )
 
     """
     def loss_fn(params):
