@@ -159,7 +159,7 @@ def train_step(state: MyTrainState, batch):
     new_model_state, logits = aux[1]
     metrics = compute_metrics(logits, batch['label'])
     new_state = state.apply_gradients(
-        grads=grads, batch_stats=new_model_state['batch_stats']
+        grads=grads, batch_stats=new_model_state['batch_stats'] if 'batch_stats' in new_model_state else None
     )
 
     return new_state, metrics
