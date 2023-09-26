@@ -112,6 +112,22 @@ def train_step(state, batch):
 @partial(jax.pmap, axis_name='batch')
 def train_step(state: MyTrainState, batch):
     def loss_fn(params):
+        logits, new_model_state = state.apply_fn(
+            {'params': params, 'batch_stats': state.batch_stats},
+            batch['image'],
+            mutable=['batch_stats'],
+        )
+        loss = cross_entropy_loss(logits, batch['label'])
+        weight_penalty_params = jax.tree_util.tree_leaves(params)
+        weight_decay = 0.0001
+        weight_l2 = sum(
+            jnp.sum(x ** 2) for x in weight_penalty_params if x.ndim > 1
+        )
+        weight_penalty = weight_decay * 0.5 * weight_l2
+        loss = loss + weight_penalty
+        return loss, ( logits,new_model_state)
+    """
+    def loss_fn(params):
         logits, new_model_state = state.apply_fn({'params': params}, batch['image'], mutable=['batch_stats'])
         loss = cross_entropy_loss(logits, batch['label'])
         weight_penalty_params = jax.tree_util.tree_leaves(params)
@@ -124,7 +140,7 @@ def train_step(state: MyTrainState, batch):
         # one_hot_labels = common_utils.onehot(labels, num_classes=NUM_CLASSES)
 
         return loss, (logits, new_model_state)
-    """
+   
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
     (loss, (logits, new_model_state)), grads = grad_fn(state.params)
     #  Re-use same axis_name as in the call to `pmap(...train_step,axis=...)` in the train function
