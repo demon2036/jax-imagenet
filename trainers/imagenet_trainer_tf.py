@@ -289,7 +289,7 @@ class ImageNetTrainer(Trainer):
 
         with tqdm(total=self.total_epoch * self.steps_per_epoch) as pbar:
             for epoch in range(self.total_epoch):
-                for _ in range(5):
+                for _ in range(50):
                     batch = next(self.dl)
                     # x, y = batch['image'],batch['label']
                     # x, y = torch_to_jax(x), torch_to_jax(y)
