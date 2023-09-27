@@ -188,11 +188,11 @@ def train_step_without_bn(state: MyTrainState, batch):
 
 @partial(jax.pmap, axis_name='batch', )
 def eval_step(state, batch):
-    variables = {'params': state.params, 'batch_stats': state.batch_stats}
-    # variables = {'params': state.params, }
-    #
-    # if state.batch_stats is not None:
-    #     variables.update({'batch_stats': state.batch_stats})
+    # variables = {'params': state.params, 'batch_stats': state.batch_stats}
+    variables = {'params': state.params, }
+
+    if state.batch_stats is not None:
+        variables.update({'batch_stats': state.batch_stats})
 
     logits = state.apply_fn(variables, batch['image'], train=False, mutable=False)
 
