@@ -148,9 +148,8 @@ def train_step(state: MyTrainState, batch):
 @partial(jax.pmap, axis_name='batch')
 def train_step(state: MyTrainState, batch):
     def loss_fn(params):
-        variable = {'params': params, }
+        logits = state.apply_fn({'params': params, }, batch['image'])
 
-        logits,  = state.apply_fn(variable, batch['image'])
         loss = cross_entropy_loss(logits, batch['label'])
         weight_penalty_params = jax.tree_util.tree_leaves(params)
         weight_decay = 0.0001
@@ -161,13 +160,14 @@ def train_step(state: MyTrainState, batch):
         loss = loss + weight_penalty
         # one_hot_labels = common_utils.onehot(labels, num_classes=NUM_CLASSES)
 
-        return loss, (logits,)
+        return loss, logits
 
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
     aux, grads = grad_fn(state.params)
     # Re-use same axis_name as in the call to `pmap(...train_step...)` below.
     grads = jax.lax.pmean(grads, axis_name='batch')
     logits = aux[1]
+
     metrics = compute_metrics(logits, batch['label'])
     new_state = state.apply_gradients(
         grads=grads,

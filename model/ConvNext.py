@@ -1,9 +1,10 @@
-# from torchvision.models import ConvNeXt
+from torchvision.models import ConvNeXt
 import jax
 import jax.numpy as jnp
 import flax.linen as nn
 from typing import Any, Sequence
 from functools import partial
+
 
 
 class Block(nn.Module):
@@ -31,7 +32,7 @@ class ConvNext(nn.Module):
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
-        norm = partial(nn.LayerNorm)
+        norm = partial(nn.LayerNorm, dtype=self.dtype)
         # Stem
         x = nn.Conv(self.out_channels[0], (4, 4), (4, 4), dtype=self.dtype)(x)
 

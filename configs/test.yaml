@@ -10,7 +10,7 @@
   },
   "State": {
     target: modules.state_utils.MyTrainState,
-    Input_Shape: [ [ 1,4,4,3 ], ],
+    Input_Shape: [ [ 1,224,224,3 ], ],
     Model: {
       target: model.ConvNext.ConvNext_T,
 #      target: model2.ResNet50,
