@@ -1,1 +1,22 @@
-from torch.nn.functional import scaled_dot_product_attention
+import jax
+import jax.numpy as jnp
+import flax.linen as nn
+
+
+class MultiHeadAttention(nn.Module):
+    @nn.compact
+    def __call__(self, x, *args, **kwargs):
+        pass
+
+
+class Transformer(nn.Module):
+
+    @nn.compact
+    def __call__(self, x, *args, **kwargs):
+        pass
+
+
+class ViT(nn.Module):
+    @nn.compact
+    def __call__(self, x, *args, **kwargs):
+        pass

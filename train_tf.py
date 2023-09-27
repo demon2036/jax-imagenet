@@ -2,6 +2,8 @@ import argparse
 
 import flax.jax_utils
 import jax.random
+
+from experimental.test_rep import switch_to_deploy
 from modules.state_utils import create_obj_by_config, create_state_by_config, create_state_by_config2
 from modules.utils import read_yaml
 import os
@@ -25,7 +27,12 @@ if __name__ == "__main__":
     trainer = ImageNetTrainer(train_state, **config['train'])
 
     trainer.load()
-    # trainer.state=flax.jax_utils.replicate(trainer.state)
-    # trainer.eval()
-    trainer.train()
+    trainer.state = flax.jax_utils.replicate(trainer.state)
+    trainer.eval()
+    trainer.state = flax.jax_utils.unreplicate(trainer.state)
+    trainer.state = switch_to_deploy(trainer.state, config)
+    trainer.state = flax.jax_utils.replicate(trainer.state)
+    trainer.eval()
+
+    # trainer.train()
     # trainer.test()

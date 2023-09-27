@@ -168,6 +168,11 @@ def train_step(state: MyTrainState, batch):
 @partial(jax.pmap, axis_name='batch', )
 def eval_step(state, batch):
     variables = {'params': state.params, 'batch_stats': state.batch_stats}
+    # variables = {'params': state.params, }
+    #
+    # if state.batch_stats is not None:
+    #     variables.update({'batch_stats': state.batch_stats})
+
     logits = state.apply_fn(variables, batch['image'], train=False, mutable=False)
 
     # logits, new_model_state = state.apply_fn({'params': state.params}, batch['image'], mutable=['batch_stats'])
@@ -232,7 +237,7 @@ class ImageNetTrainer(Trainer):
 
     def eval(self):
         eval_metrics = []
-        for _ in range(1):  # self.steps_per_eval
+        for _ in tqdm(range(self.steps_per_eval)):  # self.steps_per_eval
             eval_batch = next(self.dl_eval)
             metrics = eval_step(self.state, eval_batch)
             # print(metrics)
