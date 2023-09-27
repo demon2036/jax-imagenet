@@ -102,12 +102,14 @@ def create_state_by_config2(rng, print_model=True, state_configs={}, lr_fn=None)
         print(model.tabulate(rng, *inputs, z_rng=rng, depth=1, console_kwargs={'width': 200}))
     variables = model.init(rng, *inputs, z_rng=rng)
 
-    learning_rate_fn = default(lr_fn, partial(create_learning_rate_fn,
-                                              base_learning_rate=state_configs['Optimizer']['params']['learning_rate']))
+    if lr_fn is None:
+        lr_fn = create_learning_rate_fn(base_learning_rate=state_configs['Optimizer']['params']['learning_rate'])
+    else:
+        lr_fn = lr_fn()
 
     # print(learning_rate_fn,create_learning_rate_fn)
     #
-    # learning_rate_fn = learning_rate_fn()
+    learning_rate_fn = lr_fn
     state_configs['Optimizer']['params']['learning_rate'] = learning_rate_fn
 
     args = tuple()

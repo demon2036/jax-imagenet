@@ -1,7 +1,7 @@
 {
   "train": {
       image_size: 224,
-      batch_size: 32,
+      batch_size: 1,
       shuffle_size: 20000,
       data_path: '/home/john/tensorflow_datasets',
       seed: 43,
