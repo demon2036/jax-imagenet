@@ -114,7 +114,11 @@ def train_step(state, batch):
 @partial(jax.pmap, axis_name='batch')
 def train_step(state: MyTrainState, batch):
     def loss_fn(params):
-        logits, new_model_state = state.apply_fn({'params': params,'batch_stats': state.batch_stats}, batch['image'], mutable=['batch_stats'])
+        variable = {'params': params, }
+        if state.batch_stats is not None:
+            variable.update({'batch_stats': state.batch_stats})
+
+        logits, new_model_state = state.apply_fn(variable, batch['image'],mutable=['batch_stats'])
         loss = cross_entropy_loss(logits, batch['label'])
         weight_penalty_params = jax.tree_util.tree_leaves(params)
         weight_decay = 0.0001
@@ -167,11 +171,11 @@ def train_step(state: MyTrainState, batch):
 
 @partial(jax.pmap, axis_name='batch', )
 def eval_step(state, batch):
-    variables = {'params': state.params, 'batch_stats': state.batch_stats}
-    # variables = {'params': state.params, }
-    #
-    # if state.batch_stats is not None:
-    #     variables.update({'batch_stats': state.batch_stats})
+    # variables = {'params': state.params, 'batch_stats': state.batch_stats}
+    variables = {'params': state.params, }
+
+    if state.batch_stats is not None:
+        variables.update({'batch_stats': state.batch_stats})
 
     logits = state.apply_fn(variables, batch['image'], train=False, mutable=False)
 
@@ -245,7 +249,7 @@ class ImageNetTrainer(Trainer):
             eval_metrics.append(metrics)
         eval_metrics = common_utils.get_metrics(eval_metrics)
         summary = jax.tree_util.tree_map(lambda x: x.mean(), eval_metrics)
-        print('\n'*3)
+        print('\n' * 3)
         print(summary)
         print('\n' * 3)
 
