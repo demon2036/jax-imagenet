@@ -60,5 +60,5 @@ class MLPMixer(nn.Module):
 
 MLPMixer_S_32 = partial(MLPMixer, tokens_mlp_dim=256, channels_mlp_dim=2048, num_blocks=8, dim=512, patch_size=32)
 MLPMixer_S_16 = partial(MLPMixer, tokens_mlp_dim=256, channels_mlp_dim=2048, num_blocks=8, dim=512, patch_size=16)
-MLPMixer_B_32 = partial(MLPMixer, tokens_mlp_dim=384, channels_mlp_dim=3072, num_blocks=8, dim=768, patch_size=32)
-MLPMixer_B_16 = partial(MLPMixer, tokens_mlp_dim=384, channels_mlp_dim=3072, num_blocks=8, dim=768, patch_size=16)
+MLPMixer_B_32 = partial(MLPMixer, tokens_mlp_dim=384, channels_mlp_dim=3072, num_blocks=12, dim=768, patch_size=32)
+MLPMixer_B_16 = partial(MLPMixer, tokens_mlp_dim=384, channels_mlp_dim=3072, num_blocks=12, dim=768, patch_size=16)
