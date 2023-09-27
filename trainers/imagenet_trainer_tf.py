@@ -244,7 +244,9 @@ class ImageNetTrainer(Trainer):
             eval_metrics.append(metrics)
         eval_metrics = common_utils.get_metrics(eval_metrics)
         summary = jax.tree_util.tree_map(lambda x: x.mean(), eval_metrics)
+        print('\n'*3)
         print(summary)
+        print('\n' * 3)
 
     def test(self):
         self.state = flax.jax_utils.replicate(self.state)
@@ -278,7 +280,7 @@ class ImageNetTrainer(Trainer):
                     self.finished_steps += 1
                 print()
 
-                if (epoch + 1) % 2 == 0:
+                if (epoch + 1) % 10 == 0:
                     self.state = sync_batch_stats(self.state)
                     self.eval()
                     self.state = flax.jax_utils.unreplicate(self.state)
