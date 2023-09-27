@@ -258,8 +258,10 @@ class ImageNetTrainer(Trainer):
 
     def eval(self):
         eval_metrics = []
-        for _ in (range(self.steps_per_eval)):  # self.steps_per_eval
+        print(self.steps_per_eval)
+        for _ in range(self.steps_per_eval):  # self.steps_per_eval
             eval_batch = next(self.dl_eval)
+            print(eval_batch['image'].shape)
             metrics = eval_step(self.state, eval_batch)
             # print(metrics)
             eval_metrics.append(metrics)
