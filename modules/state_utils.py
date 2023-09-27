@@ -105,7 +105,9 @@ def create_state_by_config2(rng, print_model=True, state_configs={}, lr_fn=None)
     learning_rate_fn = default(lr_fn, partial(create_learning_rate_fn,
                                               base_learning_rate=state_configs['Optimizer']['params']['learning_rate']))
 
-    learning_rate_fn = learning_rate_fn()
+    # print(learning_rate_fn,create_learning_rate_fn)
+    #
+    # learning_rate_fn = learning_rate_fn()
     state_configs['Optimizer']['params']['learning_rate'] = learning_rate_fn
 
     args = tuple()

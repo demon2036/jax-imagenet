@@ -237,8 +237,9 @@ class ImageNetTrainer(Trainer):
 
     def eval(self):
         eval_metrics = []
-        for _ in tqdm(range(self.steps_per_eval)):  # self.steps_per_eval
-            eval_batch = next(self.dl_eval)
+        # for _ in tqdm(range(self.steps_per_eval)):  # self.steps_per_eval
+        #     eval_batch = next(self.dl_eval)
+        for eval_batch in tqdm(self.dl_eval):
             metrics = eval_step(self.state, eval_batch)
             # print(metrics)
             eval_metrics.append(metrics)

@@ -1,6 +1,7 @@
 import jax
 import jax.numpy as jnp
 import flax.linen as nn
+from torchvision.models import MaxVit
 
 
 class MultiHeadAttention(nn.Module):

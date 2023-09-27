@@ -247,7 +247,8 @@ def create_split(
     ds = ds.batch(batch_size, drop_remainder=True)
 
     if not train:
-        ds = ds.repeat()
+        pass
+        # ds = ds.repeat()
 
     ds = ds.prefetch(prefetch)
 

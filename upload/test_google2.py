@@ -19,6 +19,7 @@ last_file=sorted(os.listdir(f'{args.path}'),key=lambda x:int(x))[-1]
 last_file_path=f'{args.path}/{last_file}'
 print(last_file_path)
 
+os.system(f'mkdir -p {args.code_name}')
 os.system(f'rar a ./{args.code_name}.rar {last_file_path}')
 
 os.system(f'gsutil cp  {args.code_name}.rar  gs://{args.bucket}/{args.code_name}.rar')
