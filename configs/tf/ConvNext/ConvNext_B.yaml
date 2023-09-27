@@ -18,11 +18,9 @@
       }
     },
     Optimizer: {
-      target: optax.sgd,
+      target: optax.adamw,
       params: {
-        learning_rate: 0.4,
-        nesterov: True,
-        momentum: 0.9
+        learning_rate: 4e-3,
 #        b1: 0.9,
 #        b2: 0.99,
 #        weight_decay: 1
