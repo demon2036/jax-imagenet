@@ -188,11 +188,11 @@ def train_step_without_bn(state: MyTrainState, batch):
 
 @partial(jax.pmap, axis_name='batch', )
 def eval_step(state, batch):
-    # variables = {'params': state.params, 'batch_stats': state.batch_stats}
-    variables = {'params': state.params, }
-
-    if state.batch_stats is not None:
-        variables.update({'batch_stats': state.batch_stats})
+    variables = {'params': state.params, 'batch_stats': state.batch_stats}
+    # variables = {'params': state.params, }
+    #
+    # if state.batch_stats is not None:
+    #     variables.update({'batch_stats': state.batch_stats})
 
     logits = state.apply_fn(variables, batch['image'], train=False, mutable=False)
 
@@ -258,9 +258,8 @@ class ImageNetTrainer(Trainer):
 
     def eval(self):
         eval_metrics = []
-        # for _ in tqdm(range(self.steps_per_eval)):  # self.steps_per_eval
-        #     eval_batch = next(self.dl_eval)
-        for eval_batch in tqdm(self.dl_eval):
+        for _ in tqdm(range(self.steps_per_eval)):  # self.steps_per_eval
+            eval_batch = next(self.dl_eval)
             metrics = eval_step(self.state, eval_batch)
             # print(metrics)
             eval_metrics.append(metrics)
@@ -271,17 +270,18 @@ class ImageNetTrainer(Trainer):
         print('\n' * 3)
 
     def test(self):
-        self.state = flax.jax_utils.replicate(self.state)
+        #self.state = flax.jax_utils.replicate(self.state)
         eval_metrics = []
-        for _ in range(1):  # self.steps_per_eval
+        for _ in range(2):  # self.steps_per_eval
             eval_batch = next(self.dl)
             metrics = eval_step(self.state, eval_batch)
             # print(metrics)
             eval_metrics.append(metrics)
         eval_metrics = common_utils.get_metrics(eval_metrics)
+        print(eval_metrics)
         summary = jax.tree_util.tree_map(lambda x: x.mean(), eval_metrics)
         print(summary)
-        self.state = flax.jax_utils.unreplicate(self.state)
+        #self.state = flax.jax_utils.unreplicate(self.state)
 
     def train(self):
         has_bn=self.state.batch_stats is not None
@@ -289,7 +289,7 @@ class ImageNetTrainer(Trainer):
 
         with tqdm(total=self.total_epoch * self.steps_per_epoch) as pbar:
             for epoch in range(self.total_epoch):
-                for _ in range(self.steps_per_epoch):
+                for _ in range(1):
                     batch = next(self.dl)
                     # x, y = batch['image'],batch['label']
                     # x, y = torch_to_jax(x), torch_to_jax(y)
@@ -310,9 +310,9 @@ class ImageNetTrainer(Trainer):
                     if has_bn:
                         self.state = sync_batch_stats(self.state)
                     self.eval()
-                    self.state = flax.jax_utils.unreplicate(self.state)
-                    self.save()
-                    self.state = flax.jax_utils.replicate(self.state)
+                    # self.state = flax.jax_utils.unreplicate(self.state)
+                    # self.save()
+                    # self.state = flax.jax_utils.replicate(self.state)
 
 
 if __name__ == "__main__":
