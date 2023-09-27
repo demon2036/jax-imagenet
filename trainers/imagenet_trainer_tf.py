@@ -258,10 +258,8 @@ class ImageNetTrainer(Trainer):
 
     def eval(self):
         eval_metrics = []
-        print(self.steps_per_eval)
         for _ in range(self.steps_per_eval):  # self.steps_per_eval
             eval_batch = next(self.dl_eval)
-            print(eval_batch['image'].shape)
             metrics = eval_step(self.state, eval_batch)
             # print(metrics)
             eval_metrics.append(metrics)
@@ -291,7 +289,7 @@ class ImageNetTrainer(Trainer):
 
         with tqdm(total=self.total_epoch * self.steps_per_epoch) as pbar:
             for epoch in range(self.total_epoch):
-                for _ in range(50):
+                for _ in range(self.steps_per_epoch):
                     batch = next(self.dl)
                     # x, y = batch['image'],batch['label']
                     # x, y = torch_to_jax(x), torch_to_jax(y)
