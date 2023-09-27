@@ -109,16 +109,14 @@ def train_step(state, batch):
 
     return new_state, metrics
 
+"""
 
 
 @partial(jax.pmap, axis_name='batch')
 def train_step(state: MyTrainState, batch):
     def loss_fn(params):
-        variable = {'params': params, }
-        if state.batch_stats is not None:
-            variable.update({'batch_stats': state.batch_stats})
-
-        logits, new_model_state = state.apply_fn(variable, batch['image'],mutable=['batch_stats'])
+        variable = {'params': params, 'batch_stats': state.batch_stats}
+        logits, new_model_state = state.apply_fn(variable, batch['image'], mutable=['batch_stats'])
         loss = cross_entropy_loss(logits, batch['label'])
         weight_penalty_params = jax.tree_util.tree_leaves(params)
         weight_decay = 0.0001
@@ -130,6 +128,7 @@ def train_step(state: MyTrainState, batch):
         # one_hot_labels = common_utils.onehot(labels, num_classes=NUM_CLASSES)
 
         return loss, (new_model_state, logits)
+
     grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
     aux, grads = grad_fn(state.params)
     # Re-use same axis_name as in the call to `pmap(...train_step...)` below.
@@ -142,14 +141,12 @@ def train_step(state: MyTrainState, batch):
 
     return new_state, metrics
 
-"""
-
 
 @partial(jax.pmap, axis_name='batch')
-def train_step(state: MyTrainState, batch):
+def train_step_without_bn(state: MyTrainState, batch):
     def loss_fn(params):
-        logits = state.apply_fn({'params': params, }, batch['image'])
-
+        variables = {'params': params, }
+        logits = state.apply_fn(variables, batch['image'])
         loss = cross_entropy_loss(logits, batch['label'])
         weight_penalty_params = jax.tree_util.tree_leaves(params)
         weight_decay = 0.0001
@@ -158,7 +155,6 @@ def train_step(state: MyTrainState, batch):
         )
         weight_penalty = weight_decay * 0.5 * weight_l2
         loss = loss + weight_penalty
-        # one_hot_labels = common_utils.onehot(labels, num_classes=NUM_CLASSES)
 
         return loss, logits
 
@@ -274,6 +270,7 @@ class ImageNetTrainer(Trainer):
         self.state = flax.jax_utils.unreplicate(self.state)
 
     def train(self):
+        has_bn=self.state.batch_stats is not None
         self.state = flax.jax_utils.replicate(self.state)
 
         with tqdm(total=self.total_epoch * self.steps_per_epoch) as pbar:
@@ -284,7 +281,10 @@ class ImageNetTrainer(Trainer):
                     # x, y = torch_to_jax(x), torch_to_jax(y)
                     # x, y = shard(x), shard(y)
                     # print(x.shape)
-                    self.state, metrics = train_step(self.state, batch)
+                    if has_bn:
+                        self.state, metrics = train_step(self.state, batch)
+                    else:
+                        self.state, metrics = train_step_without_bn(self.state, batch)
                     for k, v in metrics.items():
                         metrics.update({k: v[0]})
                     pbar.set_postfix(metrics)
@@ -293,7 +293,7 @@ class ImageNetTrainer(Trainer):
                 print()
 
                 if (epoch + 1) % 1 == 0:
-                    if self.state.batch_stats is not None:
+                    if has_bn:
                         self.state = sync_batch_stats(self.state)
                     self.eval()
                     self.state = flax.jax_utils.unreplicate(self.state)
