@@ -308,7 +308,7 @@ class ImageNetTrainer(Trainer):
                     self.finished_steps += 1
                 print()
 
-                if (epoch + 1) % 10 == 0:
+                if (epoch + 1) % 1 == 0:
                     if has_bn:
                         self.state = sync_batch_stats(self.state)
                     self.eval()
