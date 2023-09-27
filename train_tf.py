@@ -31,9 +31,9 @@ if __name__ == "__main__":
     # trainer.state = flax.jax_utils.replicate(trainer.state)
     # trainer.eval()
     # trainer.state = flax.jax_utils.unreplicate(trainer.state)
-    trainer.state = switch_to_deploy(trainer.state, config)
-    trainer.state = flax.jax_utils.replicate(trainer.state)
-    trainer.eval()
+    # trainer.state = switch_to_deploy(trainer.state, config)
+    # trainer.state = flax.jax_utils.replicate(trainer.state)
+    # trainer.eval()
 
-    # trainer.train()
+    trainer.train()
     # trainer.test()
