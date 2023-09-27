@@ -15,7 +15,6 @@ class Block(nn.Module):
     def __call__(self, x, *args, **kwargs):
         c = x.shape[-1]
         hidden = nn.Conv(self.channels, (7, 7), padding='same', dtype=self.dtype, feature_group_count=c)(x)
-        hidden = nn.Conv(self.channels, (1, 1), padding='same', dtype=self.dtype)(hidden)
         hidden = self.norm()(hidden)
         hidden = nn.Conv(self.channels * 4, (1, 1), padding='same', dtype=self.dtype, )(hidden)
         hidden = nn.gelu(hidden)
@@ -35,7 +34,6 @@ class ConvNext(nn.Module):
         norm = partial(nn.LayerNorm, dtype=self.dtype)
         # Stem
         x = nn.Conv(self.out_channels[0], (4, 4), (4, 4), dtype=self.dtype)(x)
-        x=norm(x)
 
         for out_channel, num_block in zip(self.out_channels, self.num_blocks):
             x = norm()(x)
