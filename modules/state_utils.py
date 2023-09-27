@@ -3,7 +3,8 @@ from flax.training.train_state import TrainState
 from typing import Any
 import jax.numpy as jnp
 import jax
-from modules.utils import get_obj_from_str
+from modules.utils import get_obj_from_str, default
+from functools import partial
 
 
 class MyTrainState(TrainState):
@@ -93,7 +94,7 @@ def create_learning_rate_fn(
     return schedule_fn
 
 
-def create_state_by_config2(rng, print_model=True, state_configs={}):
+def create_state_by_config2(rng, print_model=True, state_configs={}, lr_fn=None):
     inputs = list(map(lambda shape: jnp.empty(shape), state_configs['Input_Shape']))
     model = create_obj_by_config(state_configs['Model'])
 
@@ -101,7 +102,10 @@ def create_state_by_config2(rng, print_model=True, state_configs={}):
         print(model.tabulate(rng, *inputs, z_rng=rng, depth=1, console_kwargs={'width': 200}))
     variables = model.init(rng, *inputs, z_rng=rng)
 
-    learning_rate_fn = create_learning_rate_fn()
+    learning_rate_fn = default(lr_fn, partial(create_learning_rate_fn,
+                                              base_learning_rate=state_configs['Optimizer']['params']['learning_rate']))
+
+    learning_rate_fn = learning_rate_fn()
     state_configs['Optimizer']['params']['learning_rate'] = learning_rate_fn
 
     args = tuple()
