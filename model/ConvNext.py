@@ -6,7 +6,6 @@ from typing import Any, Sequence
 from functools import partial
 
 
-
 class Block(nn.Module):
     channels: int
     norm: Any
@@ -14,10 +13,11 @@ class Block(nn.Module):
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
-        c=x.shape[-1]
-        hidden = nn.Conv(self.channels, (7, 7), padding='same', dtype=self.dtype,feature_group_count=c)(x)
+        c = x.shape[-1]
+        hidden = nn.Conv(self.channels, (7, 7), padding='same', dtype=self.dtype, feature_group_count=c)(x)
+        hidden = nn.Conv(self.channels, (1, 1), padding='same', dtype=self.dtype)(hidden)
         hidden = self.norm()(hidden)
-        hidden = nn.Conv(self.channels * 4, (1, 1), padding='same', dtype=self.dtype,)(hidden)
+        hidden = nn.Conv(self.channels * 4, (1, 1), padding='same', dtype=self.dtype, )(hidden)
         hidden = nn.gelu(hidden)
         hidden = nn.Conv(self.channels, (1, 1), padding='same', dtype=self.dtype)(hidden)
         x = x + hidden
@@ -40,7 +40,7 @@ class ConvNext(nn.Module):
             x = norm()(x)
             x = nn.Conv(out_channel, (2, 2), (2, 2), padding='same', dtype=self.dtype)(x)
             for _ in range(num_block):
-                x = Block(out_channel,norm=norm, dtype=self.dtype)(x)
+                x = Block(out_channel, norm=norm, dtype=self.dtype)(x)
 
         x = jnp.mean(x, axis=[1, 2])
         x = norm()(x)
