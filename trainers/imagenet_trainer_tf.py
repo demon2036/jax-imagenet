@@ -293,7 +293,8 @@ class ImageNetTrainer(Trainer):
                 print()
 
                 if (epoch + 1) % 1 == 0:
-                    self.state = sync_batch_stats(self.state)
+                    if self.state.batch_stats is not None:
+                        self.state = sync_batch_stats(self.state)
                     self.eval()
                     self.state = flax.jax_utils.unreplicate(self.state)
                     self.save()
