@@ -29,9 +29,9 @@
 #      }
 
     Optimizer: {
-      target: optax.lion,
+      target: optax.adamw,
       params: {
-        learning_rate: 3e-4,
+        learning_rate: 4e-3,
       }
     },
   },
