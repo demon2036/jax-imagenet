@@ -1,7 +1,7 @@
 {
   "train": {
       image_size: 224,
-      batch_size: 32,
+      batch_size: 8,
       shuffle_size: 20000,
       data_path: '/home/john/tensorflow_datasets',
       seed: 43,
@@ -12,7 +12,7 @@
     target: modules.state_utils.MyTrainState,
     Input_Shape: [ [ 1,224,224,3 ], ],
     Model: {
-      target: model.VanillaNet.VanillaNet8,
+      target: model.VanillaNet.VanillaNet5,
 #      target: model2.ResNet50,
       params: {
         dtype: bfloat16

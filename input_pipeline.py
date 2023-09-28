@@ -15,6 +15,7 @@
 """ImageNet input pipeline."""
 
 import jax
+import keras_cv
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
@@ -22,6 +23,10 @@ IMAGE_SIZE = 224
 CROP_PADDING = 32
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
+
+
+# MEAN_RGB = [0, 0, 0.]
+# STDDEV_RGB = [1, 1, 1]
 
 
 def distorted_bounding_box_crop(
@@ -223,7 +228,7 @@ def create_split(
             image = preprocess_for_train(example['image'], dtype, image_size)
         else:
             image = preprocess_for_eval(example['image'], dtype, image_size)
-        return {'image': image, 'label': example['label']}
+        return {'images': image, 'labels': tf.one_hot(example['label'],1000),'label':example['label']}
 
     ds = dataset_builder.as_dataset(
         split=split,
@@ -249,6 +254,80 @@ def create_split(
     if not train:
         ds = ds.repeat()
 
+    def cut_mix_and_mix_up(samples):
+        cut_mix = keras_cv.layers.CutMix()
+        mix_up = keras_cv.layers.MixUp()
+        samples['labels'] = tf.cast(samples['labels'], tf.float32)
+        samples = cut_mix(samples, training=True)
+        samples = mix_up(samples, training=True)
+        return samples
+
+    if train:
+        ds = ds.map(cut_mix_and_mix_up, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
     ds = ds.prefetch(prefetch)
 
     return ds
+
+
+if __name__ == "__main__":
+
+    import keras
+    import matplotlib.pyplot as plt
+
+    dataset_builder = tfds.builder('imagenet2012', data_dir='/home/john/tensorflow_datasets')
+    train_examples = dataset_builder.info.splits['train'].num_examples
+    split_size = train_examples // jax.process_count()
+    start = jax.process_index() * split_size
+    split = f'train[{start}:{start + split_size}]'
+
+
+    def decode_example(example):
+
+        image = preprocess_for_train(example['image'], tf.float32, 224)
+
+        return {'images': image, 'labels': example['label']}
+
+
+    ds = dataset_builder.as_dataset(
+        split=split,
+        decoders={
+            'image': tfds.decode.SkipDecoding(),
+        },
+    )
+    options = tf.data.Options()
+    options.threading.private_threadpool_size = 96
+    # print(options.threading.private_threadpool_size)
+    ds = ds.with_options(options)
+    ds = ds.map(decode_example, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    ds = ds.batch(64, drop_remainder=True)
+
+
+    def visualize_dataset(dataset, title):
+        plt.figure(figsize=(20, 20)).suptitle(title, fontsize=18)
+        for i, samples in enumerate(iter(dataset.take(16))):
+            # print(samples)
+            images = samples["images"]
+            plt.subplot(4, 4, i + 1)
+            plt.imshow(images[0].numpy().astype("uint8"))
+            plt.axis("off")
+        plt.show()
+
+
+    """
+    visualize_dataset(ds, title="Before Augmentation")
+    """
+
+    cut_mix = keras_cv.layers.CutMix()
+    mix_up = keras_cv.layers.MixUp()
+
+
+    def cut_mix_and_mix_up(samples):
+        samples['labels'] = tf.cast(samples['labels'], tf.float32)
+        samples = cut_mix(samples, training=True)
+        samples = mix_up(samples, training=True)
+        return samples
+
+
+    train_dataset = ds.map(cut_mix_and_mix_up, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    visualize_dataset(train_dataset, title="After CutMix and MixUp")
