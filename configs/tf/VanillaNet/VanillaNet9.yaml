@@ -18,12 +18,11 @@
       }
     },
     Optimizer: {
-      target: model.VanillaNet.VanillaNet6,
+      target: optax.sgd,
       params: {
-        learning_rate: 4e-3,
-        #        b1: 0.9,
-        #        b2: 0.99,
-        #        weight_decay: 1
+        learning_rate: 0.4,
+        nesterov: True,
+        momentum: 0.9
       }
     },
   },

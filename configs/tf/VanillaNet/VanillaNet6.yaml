@@ -12,18 +12,17 @@
     target: modules.state_utils.MyTrainState,
     Input_Shape: [ [ 1,224,224,3 ], ],
     Model: {
-      target: model.ConvNext.ConvNext_T,
+      target: model.VanillaNet.VanillaNet6,
       params: {
         num_classes: 1000
       }
     },
     Optimizer: {
-      target: model.VanillaNet.VanillaNet6,
+      target: optax.sgd,
       params: {
-        learning_rate: 4e-3,
-        #        b1: 0.9,
-        #        b2: 0.99,
-        #        weight_decay: 1
+        learning_rate: 0.4,
+        nesterov: True,
+        momentum: 0.9
       }
     },
   },
