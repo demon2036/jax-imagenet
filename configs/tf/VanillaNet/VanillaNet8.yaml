@@ -1,0 +1,31 @@
+{
+  "train": {
+      image_size: 224,
+      batch_size: 1024,
+      shuffle_size: 2000000,
+      data_path: 'gs://jtitor-eu/data/tensorflow_datasets',
+      seed: 43,
+      total_epoch: 120,
+      model_path: 'check_points'
+  },
+  "State": {
+    target: modules.state_utils.MyTrainState,
+    Input_Shape: [ [ 1,224,224,3 ], ],
+    Model: {
+      target: model.VanillaNet.VanillaNet8,
+      params: {
+        num_classes: 1000
+      }
+    },
+    Optimizer: {
+      target: model.VanillaNet.VanillaNet6,
+      params: {
+        learning_rate: 4e-3,
+        #        b1: 0.9,
+        #        b2: 0.99,
+        #        weight_decay: 1
+      }
+    },
+  },
+
+}
