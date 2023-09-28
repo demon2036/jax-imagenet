@@ -12,10 +12,11 @@ class Block(nn.Module):
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
+        y=nn.Conv(self.dim, (1, 1), dtype=self.dtype)(nn.relu(x))
         x = nn.Conv(self.dim, (1, 1), dtype=self.dtype)(x)
         x = self.norm()(x)
-
-        return nn.relu(x)
+        x = nn.Conv(self.dim, (1, 1), dtype=self.dtype)(x)
+        return x+y
 
 
 class VanillaNet(nn.Module):
