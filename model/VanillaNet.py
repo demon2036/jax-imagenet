@@ -20,7 +20,7 @@ class Block(nn.Module):
         x = nn.Conv(self.dim, (1, 1), dtype=self.dtype)(x)
         x = self.norm()(x)
         x = nn.Conv(self.dim, (1, 1), dtype=self.dtype)(x)
-        return x + y
+        return nn.relu(x + y)
 
 
 class VanillaNet(nn.Module):
