@@ -1,11 +1,11 @@
 {
   "train": {
       image_size: 224,
-      batch_size: 8,
-      shuffle_size: 20000,
-      data_path: '/home/john/tensorflow_datasets',
+      batch_size: 1024,
+      shuffle_size: 2000000,
+      data_path: 'gs://jtitor-eu/data/tensorflow_datasets',
       seed: 43,
-      total_epoch: 90,
+      total_epoch: 120,
       model_path: 'check_points'
   },
   "State": {
@@ -13,21 +13,16 @@
     Input_Shape: [ [ 1,224,224,3 ], ],
     Model: {
       target: model.VanillaNet.VanillaNet_test,
-#      target: model2.ResNet50,
       params: {
-        dtype: bfloat16
-        #num_classes: 1000
+        num_classes: 1000
       }
     },
     Optimizer: {
       target: optax.sgd,
       params: {
-        learning_rate: 0.0125,
+        learning_rate: 0.4,
         nesterov: True,
         momentum: 0.9
-#        b1: 0.9,
-#        b2: 0.99,
-#        weight_decay: 1
       }
     },
   },

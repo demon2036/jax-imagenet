@@ -12,11 +12,15 @@ class Block(nn.Module):
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
-        y=nn.Conv(self.dim, (1, 1), dtype=self.dtype)(nn.relu(x))
+        y = nn.Conv(self.dim, (3, 3), dtype=self.dtype)(x)
+        y = self.norm()(y)
+        y = nn.relu(y)
+        y = nn.Conv(self.dim, (3, 3), padding='same', dtype=self.dtype)(y)
+
         x = nn.Conv(self.dim, (1, 1), dtype=self.dtype)(x)
         x = self.norm()(x)
         x = nn.Conv(self.dim, (1, 1), dtype=self.dtype)(x)
-        return x+y
+        return x + y
 
 
 class VanillaNet(nn.Module):
@@ -59,3 +63,5 @@ VanillaNet10 = partial(VanillaNet, dims=[1024, 2048, 4096, 4096], num_blocks=[2,
 VanillaNet11 = partial(VanillaNet, dims=[1024, 2048, 4096, 4096], num_blocks=[2, 1, 5, 1])
 VanillaNet12 = partial(VanillaNet, dims=[1024, 2048, 4096, 4096], num_blocks=[2, 1, 6, 1])
 VanillaNet13 = partial(VanillaNet, dims=[1024, 2048, 4096, 4096], num_blocks=[2, 1, 7, 1])
+
+VanillaNet_test = partial(VanillaNet, dims=[512, 512, 1024, 2048], num_blocks=[2, 2, 5, 1])
