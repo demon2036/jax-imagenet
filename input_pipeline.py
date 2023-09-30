@@ -254,12 +254,13 @@ def create_split(
     if not train:
         ds = ds.repeat()
 
+    cut_mix = keras_cv.layers.CutMix()
+    mix_up = keras_cv.layers.MixUp()
     def cut_mix_and_mix_up(samples):
-        cut_mix = keras_cv.layers.CutMix()
-        mix_up = keras_cv.layers.MixUp()
+
         samples['labels'] = tf.cast(samples['labels'], tf.float32)
         samples = cut_mix(samples, training=True)
-        samples = mix_up(samples, training=True)
+        # samples = mix_up(samples, training=True)
         return samples
 
     if train:

@@ -7,7 +7,7 @@ from jax_smi import initialise_tracking
 import jax.numpy as jnp
 from jax import config
 
-config.update("jax_enable_x64", True)
+# config.update("jax_enable_x64", True)
 initialise_tracking()
 
 os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
