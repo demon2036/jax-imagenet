@@ -1,0 +1,30 @@
+{
+  "train": {
+      image_size: 224,
+      batch_size: 4096,
+      shuffle_size: 2000000,
+      data_path: 'gs://jtitor-eu/data/tensorflow_datasets',
+      seed: 43,
+      total_epoch: 300,
+      model_path: 'check_points',
+      cut_mix: True
+  },
+  "State": {
+    target: modules.state_utils.MyTrainState,
+    Input_Shape: [ [ 1,224,224,3 ], ],
+    Model: {
+      target: model.ViT.ViT_T,
+      params: {
+        num_classes: 1000
+      }
+    },
+    Optimizer: {
+      target: optax.lion,
+      params: {
+        learning_rate: 1.0e-3,
+        weight_decay: 1
+      }
+    },
+  },
+
+}
