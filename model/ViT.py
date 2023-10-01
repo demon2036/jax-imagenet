@@ -102,10 +102,10 @@ class ViT(nn.Module):
         b, *_ = x.shape
         norm = partial(nn.LayerNorm, dtype=self.dtype)
 
-        x=Embedding(self.dim,self.patch_size)(x)
+        # x=Embedding(self.dim,self.patch_size)(x)
 
-        # x = nn.Conv(self.dim, (self.patch_size, self.patch_size), (self.patch_size, self.patch_size), dtype=self.dtype)(
-        #     x)
+        x = nn.Conv(self.dim, (self.patch_size, self.patch_size), (self.patch_size, self.patch_size), dtype=self.dtype)(
+            x)
         x = einops.rearrange(x, 'b h w c->b (h w) c')
 
         if self.classifier == 'token':
