@@ -12,7 +12,7 @@
     target: modules.state_utils.MyTrainState,
     Input_Shape: [ [ 1,224,224,3 ], ],
     Model: {
-      target: model.PoolFormer.PoolFormer_B,
+      target: model.ViT.PoolFormer_T,
       params: {
         num_classes: 1000
       }

@@ -110,7 +110,7 @@ if __name__ == "__main__":
                                           state_configs=config['State'])
     batch_stats = train_state.batch_stats
 
-    # batch_stats = jax.tree_util.tree_map(temp, batch_stats)
+    # batch_stats = jax.tree_util.tree_map(PoolFormer, batch_stats)
 
     shape = (1, 224, 224, 3)
     params = train_state.params
