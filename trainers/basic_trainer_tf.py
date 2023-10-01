@@ -35,12 +35,13 @@ class Trainer:
                  seed=43,
                  total_epoch=90,
                  model_path='check_points/Diffusion',
-                 ckpt_max_to_keep=5
+                 ckpt_max_to_keep=5,
+                 cut_mix=False
                  ):
         # 'gs://jtitor-eu/data/tensorflow_datasets'
         dataset_builder = tfds.builder('imagenet2012', try_gcs=try_gcs,
                                        data_dir=data_path)  # try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets'
-        ds_train = create_split(dataset_builder, batch_size=batch_size, train=True, cache=True)
+        ds_train = create_split(dataset_builder, batch_size=batch_size, train=True, cache=True,cutmix=cut_mix)
         ds_eval = create_split(dataset_builder, batch_size=batch_size, train=False, cache=True)
 
         self.dl = map(prepare_tf_data, ds_train)

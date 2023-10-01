@@ -197,6 +197,7 @@ def create_split(
         cache=False,
         shuffle_buffer_size=16 * 1024,
         prefetch=10,
+        cutmix=False
 ):
     """Creates a split from the ImageNet dataset using TensorFlow Datasets.
 
@@ -263,9 +264,8 @@ def create_split(
         # samples = mix_up(samples, training=True)
         return samples
 
-    if train:
-        pass
-        # ds = ds.map(cut_mix_and_mix_up, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    if train and cutmix:
+        ds = ds.map(cut_mix_and_mix_up, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     ds = ds.prefetch(prefetch)
 
