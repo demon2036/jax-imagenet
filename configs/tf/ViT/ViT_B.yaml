@@ -20,8 +20,8 @@
     Optimizer: {
       target: optax.adamw,
       params: {
-        learning_rate: 0.001,
-        weight_decay: 0.005
+        learning_rate: 3.0e-4,
+        weight_decay: 0.05
       }
     },
   },

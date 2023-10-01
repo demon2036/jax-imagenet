@@ -42,7 +42,6 @@ class MLP(nn.Module):
         return x
 
 
-"""
 class Block(nn.Module):
     dim: int
     norm: Any
@@ -53,10 +52,12 @@ class Block(nn.Module):
     def __call__(self, x, *args, **kwargs):
         y = self.norm()(x)
         y = MultiHeadAttention(self.dim, self.nums_head, self.dtype)(y)
-        x = y
+        x = y + x
         y = self.norm()(x)
         y = MLP(self.dim)(y)
-        return x+y
+        return x + y
+
+
 """
 
 
@@ -70,6 +71,21 @@ class Block(nn.Module):
     def __call__(self, x, *args, **kwargs):
         y = self.norm()(x)
         return MultiHeadAttention(self.dim, self.nums_head, self.dtype)(y) + MLP(self.dim)(y) + x
+"""
+
+
+class Embedding(nn.Module):
+    din: int
+    patch_size: int
+
+    @nn.compact
+    def __call__(self, x, *args, **kwargs):
+        i = 0
+        res = 0
+        while i < self.patch_size:
+            i += 2
+            res += nn.Conv(self.din, (i, i), (self.patch_size, self.patch_size), padding='same')(x)
+        return res
 
 
 class ViT(nn.Module):
@@ -85,8 +101,11 @@ class ViT(nn.Module):
     def __call__(self, x, *args, **kwargs):
         b, *_ = x.shape
         norm = partial(nn.LayerNorm, dtype=self.dtype)
-        x = nn.Conv(self.dim, (self.patch_size, self.patch_size), (self.patch_size, self.patch_size), dtype=self.dtype)(
-            x)
+
+        x=Embedding(self.dim,self.patch_size)(x)
+
+        # x = nn.Conv(self.dim, (self.patch_size, self.patch_size), (self.patch_size, self.patch_size), dtype=self.dtype)(
+        #     x)
         x = einops.rearrange(x, 'b h w c->b (h w) c')
 
         if self.classifier == 'token':

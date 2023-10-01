@@ -228,7 +228,7 @@ def create_split(
             image = preprocess_for_train(example['image'], dtype, image_size)
         else:
             image = preprocess_for_eval(example['image'], dtype, image_size)
-        return {'images': image, 'labels': tf.one_hot(example['label'],1000),'label':example['label']}
+        return {'images': image, 'labels': tf.one_hot(example['label'], 1000)}
 
     ds = dataset_builder.as_dataset(
         split=split,
@@ -256,6 +256,7 @@ def create_split(
 
     cut_mix = keras_cv.layers.CutMix()
     mix_up = keras_cv.layers.MixUp()
+
     def cut_mix_and_mix_up(samples):
         samples['labels'] = tf.cast(samples['labels'], tf.float32)
         samples = cut_mix(samples, training=True)

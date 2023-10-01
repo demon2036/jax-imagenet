@@ -3,6 +3,7 @@ import os
 from functools import partial
 
 import jax
+import optax
 import tensorflow_datasets as tfds
 import flax
 import flax.jax_utils
@@ -16,6 +17,7 @@ from trainers.basic_trainer_tf import Trainer
 from modules.state_utils import *
 
 NUM_CLASSES = 1000
+
 
 
 def stack_forest(forest):
@@ -136,13 +138,13 @@ def train_step(state: MyTrainState, batch):
         variable = {'params': params, 'batch_stats': state.batch_stats}
         logits, new_model_state = state.apply_fn(variable, batch['images'], mutable=['batch_stats'])
         loss = cross_entropy_loss(logits, batch['labels'])
-        weight_penalty_params = jax.tree_util.tree_leaves(params)
-        weight_decay = 0.0001
-        weight_l2 = sum(
-            jnp.sum(x ** 2) for x in weight_penalty_params if x.ndim > 1
-        )
-        weight_penalty = weight_decay * 0.5 * weight_l2
-        loss = loss + weight_penalty
+        # weight_penalty_params = jax.tree_util.tree_leaves(params)
+        # weight_decay = 0.0001
+        # weight_l2 = sum(
+        #     jnp.sum(x ** 2) for x in weight_penalty_params if x.ndim > 1
+        # )
+        # weight_penalty = weight_decay * 0.5 * weight_l2
+        # loss = loss + weight_penalty
         # one_hot_labels = common_utils.onehot(labels, num_classes=NUM_CLASSES)
 
         return loss, (new_model_state, logits)
