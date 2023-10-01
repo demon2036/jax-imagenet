@@ -22,6 +22,9 @@ if __name__ == "__main__":
     print(args)
     config = read_yaml(args.config_path)
     lr_fn=partial(create_learning_rate_fn,num_epochs=config['train']['total_epoch'])
+
+    print('test')
+
     train_state = create_state_by_config2(rng=jax.random.PRNGKey(seed=config['train']['seed']),
                                           state_configs=config['State'],lr_fn=lr_fn)
 

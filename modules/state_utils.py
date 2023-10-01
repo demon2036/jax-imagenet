@@ -106,7 +106,7 @@ def create_state_by_config2(rng, print_model=True, state_configs={}, lr_fn=None)
     if lr_fn is None:
         lr_fn = create_learning_rate_fn(base_learning_rate=state_configs['Optimizer']['params']['learning_rate'])
     else:
-        lr_fn = lr_fn()
+        lr_fn = lr_fn(base_learning_rate=state_configs['Optimizer']['params']['learning_rate'])
 
     # print(learning_rate_fn,create_learning_rate_fn)
     #
