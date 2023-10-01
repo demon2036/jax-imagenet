@@ -1,28 +1,27 @@
 {
   "train": {
       image_size: 224,
-      batch_size: 32,
-      shuffle_size: 20000,
-      data_path: '/home/john/tensorflow_datasets',
+      batch_size: 4096,
+      shuffle_size: 2000000,
+      data_path: 'gs://jtitor-eu/data/tensorflow_datasets',
       seed: 43,
-      total_epoch: 90,
+      total_epoch: 120,
       model_path: 'check_points'
   },
   "State": {
     target: modules.state_utils.MyTrainState,
     Input_Shape: [ [ 1,224,224,3 ], ],
     Model: {
-#      target: model.ViT.ViT_T,
-      target: model.PoolFormer.PoolFormer_T,
+      target: model.PoolFormer.PoolFormer_S,
       params: {
         num_classes: 1000
       }
     },
     Optimizer: {
-      target: optax.adamw,
+      target: optax.lion,
       params: {
-        learning_rate: 1.0e-4,
-        b2: 0.98
+        learning_rate: 1.0e-3,
+        weight_decay: 0.05
       }
     },
   },
