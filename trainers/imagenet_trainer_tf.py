@@ -19,7 +19,6 @@ from modules.state_utils import *
 NUM_CLASSES = 1000
 
 
-
 def stack_forest(forest):
     """Helper function to stack the leaves of a sequence of pytrees.
 
@@ -73,7 +72,6 @@ def acc_topk(logits, labels, topk=(1,)):
 
 
 def cross_entropy_loss(logits, labels):
-
     one_hot_labels = labels
 
     xentropy = optax.softmax_cross_entropy(logits=logits, labels=one_hot_labels)
@@ -83,7 +81,7 @@ def cross_entropy_loss(logits, labels):
 def compute_metrics(logits, labels):
     loss = cross_entropy_loss(logits, labels)
 
-    accuracy = jnp.mean(jnp.argmax(logits, -1) == jnp.argmax(labels,-1))
+    accuracy = jnp.mean(jnp.argmax(logits, -1) == jnp.argmax(labels, -1))
     # top1, top5 = acc_topk(logits, labels, (1, 5))
     metrics = {
         'loss': loss,
@@ -235,7 +233,7 @@ def sync_batch_stats(state):
 
 class ImageNetTrainer(Trainer):
     def __init__(self,
-                 state,
+                 state=None,
                  *args,
                  **kwargs):
         super().__init__(*args, **kwargs)
@@ -244,6 +242,12 @@ class ImageNetTrainer(Trainer):
         # self.dl = create_split(dataset_builder, batch_size=1024, train=True, cache=True)
         self.state = state
         self.template_ckpt = {'model': self.state, 'steps': self.finished_steps}
+
+    def create_state(self, state_configs):
+        lr_fn = partial(create_learning_rate_fn, num_epochs=self.total_epoch, steps_per_epoch=self.steps_per_epoch)
+        self.state = create_state_by_config2(rng=self.rng, state_configs=state_configs, lr_fn=lr_fn)
+        self.template_ckpt = {'model': self.state, 'steps': self.finished_steps}
+
 
     def load(self, model_path=None, template_ckpt=None):
         if model_path is not None:

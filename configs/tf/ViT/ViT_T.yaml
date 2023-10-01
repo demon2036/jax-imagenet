@@ -1,7 +1,7 @@
 {
   "train": {
       image_size: 224,
-      batch_size: 1024,
+      batch_size: 4096,
       shuffle_size: 2000000,
       data_path: 'gs://jtitor-eu/data/tensorflow_datasets',
       seed: 43,
@@ -18,10 +18,10 @@
       }
     },
     Optimizer: {
-      target: optax.adamw,
+      target: optax.lion,
       params: {
         learning_rate: 1.0e-3,
-        weight_decay: 0.05
+        weight_decay: 1
       }
     },
   },

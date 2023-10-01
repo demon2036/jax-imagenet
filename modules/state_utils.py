@@ -77,7 +77,7 @@ def create_learning_rate_fn(
         warmup_epochs=5,
         num_epochs=90
 ):
-    print(base_learning_rate,warmup_epochs,num_epochs)
+    print(base_learning_rate,steps_per_epoch,warmup_epochs,num_epochs)
     """Create learning rate schedule."""
     warmup_fn = optax.linear_schedule(
         init_value=0.0,
