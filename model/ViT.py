@@ -15,10 +15,14 @@ class MultiHeadAttention(nn.Module):
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
-        x = nn.Dense(3 * self.dim, dtype=self.dtype)(x)
+        b, *_ = x.shape
+
+        x = nn.Dense(3 * self.dim, dtype=self.dtype, use_bias=False)(x)
         q, k, v = tuple(einops.rearrange(x, 'b t (d k h) -> k b h t d ', k=3, h=self.heads))
-        scaled_dot_prod = jnp.einsum('b h i d , b h j d -> b h i j', q, k)  # * self.scale_factor
-        attn = nn.softmax(scaled_dot_prod, )
+        # q = nn.LayerNorm()(q)
+        # k = nn.LayerNorm()(k)
+        scaled_dot_prod = jnp.einsum('b h i d , b h j d -> b h i j', q, k) / jnp.sqrt(x.shape[-1])
+        attn = nn.softmax(scaled_dot_prod, axis=-1)
         out = jnp.einsum('b h i j , b  h j d -> b h i d', attn, v)
         out = einops.rearrange(out, 'b h i d-> b i ( h d)')
         out = nn.Dense(self.dim, dtype=self.dtype)(out)
@@ -38,6 +42,7 @@ class MLP(nn.Module):
         return x
 
 
+"""
 class Block(nn.Module):
     dim: int
     norm: Any
@@ -48,10 +53,23 @@ class Block(nn.Module):
     def __call__(self, x, *args, **kwargs):
         y = self.norm()(x)
         y = MultiHeadAttention(self.dim, self.nums_head, self.dtype)(y)
-        x = x + y
+        x = y
         y = self.norm()(x)
         y = MLP(self.dim)(y)
-        return x + y
+        return x+y
+"""
+
+
+class Block(nn.Module):
+    dim: int
+    norm: Any
+    nums_head: int
+    dtype: Any = jnp.bfloat16
+
+    @nn.compact
+    def __call__(self, x, *args, **kwargs):
+        y = self.norm()(x)
+        return MultiHeadAttention(self.dim, self.nums_head, self.dtype)(y) + MLP(self.dim)(y)+x
 
 
 class ViT(nn.Module):
@@ -72,12 +90,15 @@ class ViT(nn.Module):
         x = einops.rearrange(x, 'b h w c->b (h w) c')
 
         if self.classifier == 'token':
-            cls = self.param('cls', nn.initializers.zeros, (1, 1, self.dim),self.dtype)
+            cls = self.param('cls', nn.initializers.zeros, (1, 1, self.dim), self.dtype)
             cls = jnp.tile(cls, [b, 1, 1])
             x = jnp.concatenate([cls, x], axis=1)
+        """"""
+        for i in range(self.depth):
+                x = Block(self.dim, norm, self.nums_head, self.dtype)(x)
 
-        for _ in range(self.depth):
-            x = Block(self.dim, norm, self.nums_head, self.dtype)(x)
+
+        x = nn.LayerNorm()(x)
 
         if self.classifier == 'token':
             x = x[:, 0]

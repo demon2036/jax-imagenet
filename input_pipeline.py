@@ -257,14 +257,14 @@ def create_split(
     cut_mix = keras_cv.layers.CutMix()
     mix_up = keras_cv.layers.MixUp()
     def cut_mix_and_mix_up(samples):
-
         samples['labels'] = tf.cast(samples['labels'], tf.float32)
         samples = cut_mix(samples, training=True)
         # samples = mix_up(samples, training=True)
         return samples
 
     if train:
-        ds = ds.map(cut_mix_and_mix_up, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        pass
+        # ds = ds.map(cut_mix_and_mix_up, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     ds = ds.prefetch(prefetch)
 

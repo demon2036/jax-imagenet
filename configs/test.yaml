@@ -1,7 +1,7 @@
 {
   "train": {
       image_size: 224,
-      batch_size: 8,
+      batch_size: 32,
       shuffle_size: 20000,
       data_path: '/home/john/tensorflow_datasets',
       seed: 43,
@@ -12,7 +12,7 @@
     target: modules.state_utils.MyTrainState,
     Input_Shape: [ [ 1,224,224,3 ], ],
     Model: {
-      target: model.ViT.ViT_B,
+      target: model.ViT.ViT_T,
 #      target: model2.ResNet50,
       params: {
         dtype: bfloat16
@@ -22,7 +22,7 @@
     Optimizer: {
       target: optax.adamw,
       params: {
-        learning_rate: 1e-4,
+        learning_rate: 1e-7,
       }
     },
   },

@@ -115,7 +115,9 @@ def create_state_by_config2(rng, print_model=True, state_configs={}, lr_fn=None)
     args = tuple()
     args += (create_obj_by_config(state_configs['Optimizer']),)
     tx = optax.chain(
-        *args
+        optax.clip_by_global_norm(0.01),
+        *args,
+        # optax.clip_by_global_norm(1),
     )
 
     train_state = get_obj_from_str(state_configs['target'])

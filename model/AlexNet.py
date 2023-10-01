@@ -4,6 +4,9 @@ import jax.numpy as jnp
 import flax.linen as nn
 from typing import Any
 
+import optax
+
+
 
 # from torchvision.models import AlexNet
 
