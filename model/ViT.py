@@ -21,7 +21,7 @@ class MultiHeadAttention(nn.Module):
         q, k, v = tuple(einops.rearrange(x, 'b t (d k h) -> k b h t d ', k=3, h=self.heads))
         # q = nn.LayerNorm()(q)
         # k = nn.LayerNorm()(k)
-        scaled_dot_prod = jnp.einsum('b h i d , b h j d -> b h i j', q, k) / jnp.sqrt(x.shape[-1])
+        scaled_dot_prod = jnp.einsum('b h i d , b h j d -> b h i j', q, k) * q.shape[-1] ** -0.5
         attn = nn.softmax(scaled_dot_prod, axis=-1)
         out = jnp.einsum('b h i j , b  h j d -> b h i d', attn, v)
         out = einops.rearrange(out, 'b h i d-> b i ( h d)')
@@ -69,7 +69,7 @@ class Block(nn.Module):
     @nn.compact
     def __call__(self, x, *args, **kwargs):
         y = self.norm()(x)
-        return MultiHeadAttention(self.dim, self.nums_head, self.dtype)(y) + MLP(self.dim)(y)+x
+        return MultiHeadAttention(self.dim, self.nums_head, self.dtype)(y) + MLP(self.dim)(y) + x
 
 
 class ViT(nn.Module):
@@ -93,13 +93,10 @@ class ViT(nn.Module):
             cls = self.param('cls', nn.initializers.zeros, (1, 1, self.dim), self.dtype)
             cls = jnp.tile(cls, [b, 1, 1])
             x = jnp.concatenate([cls, x], axis=1)
-        """"""
         for i in range(self.depth):
-                x = Block(self.dim, norm, self.nums_head, self.dtype)(x)
+            x = Block(self.dim, norm, self.nums_head, self.dtype)(x)
 
-
-        x = nn.LayerNorm()(x)
-
+        x = norm()(x)
         if self.classifier == 'token':
             x = x[:, 0]
 
