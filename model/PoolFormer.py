@@ -48,7 +48,7 @@ class PoolFormer(nn.Module):
         for _ in range(self.depth):
             x = Block(dim=self.dim, norm=norm, dtype=self.dtype)(x)
         x = norm()(x)
-        x = jnp.mean(x, [1, 2])
+        x = jnp.mean(x, [1])
         x = nn.Dense(self.num_classes, dtype=self.dtype)(x)
         return x
 

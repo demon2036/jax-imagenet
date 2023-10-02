@@ -63,5 +63,4 @@ VanillaNet10 = partial(VanillaNet, dims=[1024, 2048, 4096, 4096], num_blocks=[2,
 VanillaNet11 = partial(VanillaNet, dims=[1024, 2048, 4096, 4096], num_blocks=[2, 1, 5, 1])
 VanillaNet12 = partial(VanillaNet, dims=[1024, 2048, 4096, 4096], num_blocks=[2, 1, 6, 1])
 VanillaNet13 = partial(VanillaNet, dims=[1024, 2048, 4096, 4096], num_blocks=[2, 1, 7, 1])
-
 VanillaNet_test = partial(VanillaNet, dims=[512, 512, 1024, 2048], num_blocks=[2, 2, 5, 1])
