@@ -231,8 +231,8 @@ def create_split(
             image = preprocess_for_train(example['image'], dtype, image_size)
         else:
             image = preprocess_for_eval(example['image'], dtype, image_size)
-            example['label']=tf.one_hot(example['label'],1000)
-        return {'images': image, 'labels':  example['label']}
+            example['label'] = tf.one_hot(example['label'], 1000)
+        return {'images': image, 'labels': example['label']}
 
     ds = dataset_builder.as_dataset(
         split=split,
@@ -258,7 +258,7 @@ def create_split(
     if not train:
         ds = ds.repeat()
 
-    cut_mix = tensorflow_models.vision.augment.MixupAndCutmix(num_classes=1000, prob=1.0, switch_prob=0.2)
+    cut_mix = tensorflow_models.vision.augment.MixupAndCutmix(num_classes=1000, prob=0.2, switch_prob=1.0)
 
     def cut_mix_and_mix_up(samples):
         samples['images'], samples['labels'] = cut_mix(samples['images'], samples['labels'])
@@ -324,11 +324,7 @@ if __name__ == "__main__":
     visualize_dataset(ds, title="Before Augmentation")
     """
 
-    cut_mix = keras_cv.layers.CutMix()
-    mix_up = keras_cv.layers.MixUp()
-    # cut_mix=keras_cv.layers.RandomApply(cut_mix)
-
-    cutmix = tensorflow_models.vision.augment.MixupAndCutmix(num_classes=1000, prob=1.0, switch_prob=0.2)
+    cutmix = tensorflow_models.vision.augment.MixupAndCutmix(num_classes=1000, prob=0.2, switch_prob=1.0)
 
 
     def cut_mix_and_mix_up(samples):
