@@ -19,10 +19,10 @@
       }
     },
     Optimizer: {
-      target: optax.adamw,
+      target: optax.lion,
       params: {
-        learning_rate: 1.0e-3,
-        weight_decay: 0.0001
+        learning_rate: 3.0e-4,
+        weight_decay: 0.001
       }
     },
   },
