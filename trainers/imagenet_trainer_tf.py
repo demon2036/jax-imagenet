@@ -301,6 +301,7 @@ class ImageNetTrainer(Trainer):
             for epoch in range(self.total_epoch):
                 for _ in range(self.steps_per_epoch):
                     batch = next(self.dl)
+
                     # print(batch['labels'])
                     # x, y = batch['image'],batch['label']
                     # x, y = torch_to_jax(x), torch_to_jax(y)

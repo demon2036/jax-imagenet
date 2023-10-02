@@ -231,7 +231,7 @@ def create_split(
             image = preprocess_for_train(example['image'], dtype, image_size)
         else:
             image = preprocess_for_eval(example['image'], dtype, image_size)
-        return {'images': image, 'labels': tf.one_hot(example['label'], 1000)}
+        return {'images': image, 'labels':  example['label']}
 
     ds = dataset_builder.as_dataset(
         split=split,
