@@ -13,20 +13,22 @@
 # limitations under the License.
 
 """ImageNet input pipeline."""
+import random
 
 import jax
 import keras_cv
+import matplotlib
 import tensorflow as tf
 import tensorflow_datasets as tfds
+import tensorflow_models
 
 IMAGE_SIZE = 224
 CROP_PADDING = 32
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 
-
-# MEAN_RGB = [0, 0, 0.]
-# STDDEV_RGB = [1, 1, 1]
+MEAN_RGB = [0, 0, 0.]
+STDDEV_RGB = [1, 1, 1]
 
 
 def distorted_bounding_box_crop(
@@ -255,16 +257,14 @@ def create_split(
     if not train:
         ds = ds.repeat()
 
-    cut_mix = keras_cv.layers.CutMix()
-    mix_up = keras_cv.layers.MixUp()
+    cut_mix = tensorflow_models.vision.augment.MixupAndCutmix(num_classes=1000, prob=1.0, switch_prob=0.2)
 
     def cut_mix_and_mix_up(samples):
-        samples['labels'] = tf.cast(samples['labels'], tf.float32)
-        samples = cut_mix(samples, training=True)
-        # samples = mix_up(samples, training=True)
+        samples['images'], samples['labels'] = cut_mix(samples['images'], samples['labels'])
         return samples
 
     if train and cutmix:
+        print(111)
         ds = ds.map(cut_mix_and_mix_up, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     ds = ds.prefetch(prefetch)
@@ -276,6 +276,8 @@ if __name__ == "__main__":
 
     import keras
     import matplotlib.pyplot as plt
+
+    matplotlib.use('TkAgg')
 
     dataset_builder = tfds.builder('imagenet2012', data_dir='/home/john/tensorflow_datasets')
     train_examples = dataset_builder.info.splits['train'].num_examples
@@ -308,6 +310,7 @@ if __name__ == "__main__":
     def visualize_dataset(dataset, title):
         plt.figure(figsize=(20, 20)).suptitle(title, fontsize=18)
         for i, samples in enumerate(iter(dataset.take(16))):
+            print(samples['labels'])
             # print(samples)
             images = samples["images"]
             plt.subplot(4, 4, i + 1)
@@ -322,14 +325,21 @@ if __name__ == "__main__":
 
     cut_mix = keras_cv.layers.CutMix()
     mix_up = keras_cv.layers.MixUp()
+    # cut_mix=keras_cv.layers.RandomApply(cut_mix)
+
+    cutmix = tensorflow_models.vision.augment.MixupAndCutmix(num_classes=1000, prob=1.0, switch_prob=0.2)
 
 
     def cut_mix_and_mix_up(samples):
-        samples['labels'] = tf.cast(samples['labels'], tf.float32)
-        samples = cut_mix(samples, training=True)
-        samples = mix_up(samples, training=True)
+        # samples['labels'] = tf.cast(samples['labels'], tf.float32)
+        # samples = cut_mix(samples, training=True)
+        samples['images'], samples['labels'] = cutmix(samples['images'], samples['labels'])
+
+        # samples = mix_up(samples, training=True)
         return samples
 
 
     train_dataset = ds.map(cut_mix_and_mix_up, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    visualize_dataset(train_dataset, title="After CutMix and MixUp")
+    visualize_dataset(train_dataset, title="After CutMix and MixUp")
     visualize_dataset(train_dataset, title="After CutMix and MixUp")

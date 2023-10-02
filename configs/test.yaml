@@ -6,14 +6,15 @@
       data_path: '/home/john/tensorflow_datasets',
       seed: 43,
       total_epoch: 90,
-      model_path: 'check_points'
+      model_path: 'check_points',
+      cut_mix: True
   },
   "State": {
     target: modules.state_utils.MyTrainState,
     Input_Shape: [ [ 1,224,224,3 ], ],
     Model: {
 #      target: model.PoolFormer.ViT_T,
-      target: model.ViT.PoolFormer_T,
+      target: model.PoolFormer.PoolFormer_T,
       params: {
         num_classes: 1000
       }
