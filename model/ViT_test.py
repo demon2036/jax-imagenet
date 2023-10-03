@@ -302,3 +302,5 @@ class VisionTransformer(nn.Module):
 
 ViT_T = partial(VisionTransformer, hidden_size=192, transformer={'mlp_dim': 192 * 4, 'num_layers': 12, 'num_heads': 3},
                 patches=(16,16))
+ViT_S = partial(VisionTransformer, hidden_size=384, transformer={'mlp_dim': 384 * 4, 'num_layers': 12, 'num_heads': 6},
+                patches=(16,16))
