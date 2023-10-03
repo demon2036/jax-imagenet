@@ -281,62 +281,58 @@ if __name__ == "__main__":
     matplotlib.use('TkAgg')
 
     dataset_builder = tfds.builder('imagenet2012', data_dir='/home/john/tensorflow_datasets')
-    train_examples = dataset_builder.info.splits['train'].num_examples
-    split_size = train_examples // jax.process_count()
-    start = jax.process_index() * split_size
-    split = f'train[{start}:{start + split_size}]'
+    ds=create_split(dataset_builder,64,True,cutmix=True)
 
 
-    def decode_example(example):
+    # def decode_example(example):
+    #
+    #     image = preprocess_for_train(example['image'], tf.float32, 224)
+    #
+    #     return {'images': image, 'labels': example['label']}
+    #
+    #
+    # ds = dataset_builder.as_dataset(
+    #     split=split,
+    #     decoders={
+    #         'image': tfds.decode.SkipDecoding(),
+    #     },
+    # )
+    # options = tf.data.Options()
+    # options.threading.private_threadpool_size = 96
+    # # print(options.threading.private_threadpool_size)
+    # ds = ds.with_options(options)
+    # ds = ds.map(decode_example, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    #
+    # cutmix = tensorflow_models.vision.augment.MixupAndCutmix(num_classes=1000, prob=0.2, switch_prob=1.0)
+    #
+    #
+    # def cut_mix_and_mix_up(samples):
+    #     # samples['labels'] = tf.cast(samples['labels'], tf.float32)
+    #     # samples = cut_mix(samples, training=True)
+    #     samples['images'], samples['labels'] = cutmix(samples['images'], samples['labels'])
+    #
+    #     # samples = mix_up(samples, training=True)
+    #     return samples
+    #
+    #
+    # ds = ds.batch(64, drop_remainder=True)
+    # ds = ds.map(cut_mix_and_mix_up, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    # # ds = ds.batch(64, drop_remainder=True)
 
-        image = preprocess_for_train(example['image'], tf.float32, 224)
-
-        return {'images': image, 'labels': example['label']}
-
-
-    ds = dataset_builder.as_dataset(
-        split=split,
-        decoders={
-            'image': tfds.decode.SkipDecoding(),
-        },
-    )
-    options = tf.data.Options()
-    options.threading.private_threadpool_size = 96
-    # print(options.threading.private_threadpool_size)
-    ds = ds.with_options(options)
-    ds = ds.map(decode_example, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    ds = ds.batch(64, drop_remainder=True)
 
 
     def visualize_dataset(dataset, title):
         plt.figure(figsize=(20, 20)).suptitle(title, fontsize=18)
-        for i, samples in enumerate(iter(dataset.take(16))):
+        for i, samples in enumerate(iter(dataset.take(64))):
             print(samples['labels'])
             # print(samples)
             images = samples["images"]
-            plt.subplot(4, 4, i + 1)
+            plt.subplot(8, 8, i + 1)
             plt.imshow(images[0].numpy().astype("uint8"))
             plt.axis("off")
         plt.show()
 
 
-    """
-    visualize_dataset(ds, title="Before Augmentation")
-    """
-
-    cutmix = tensorflow_models.vision.augment.MixupAndCutmix(num_classes=1000, prob=0.2, switch_prob=1.0)
-
-
-    def cut_mix_and_mix_up(samples):
-        # samples['labels'] = tf.cast(samples['labels'], tf.float32)
-        # samples = cut_mix(samples, training=True)
-        samples['images'], samples['labels'] = cutmix(samples['images'], samples['labels'])
-
-        # samples = mix_up(samples, training=True)
-        return samples
-
-
-    train_dataset = ds.map(cut_mix_and_mix_up, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    visualize_dataset(train_dataset, title="After CutMix and MixUp")
-    visualize_dataset(train_dataset, title="After CutMix and MixUp")
-    visualize_dataset(train_dataset, title="After CutMix and MixUp")
+    visualize_dataset(ds, title="After CutMix and MixUp")
+    visualize_dataset(ds, title="After CutMix and MixUp")
+    visualize_dataset(ds, title="After CutMix and MixUp")

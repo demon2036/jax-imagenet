@@ -23,7 +23,6 @@ if __name__ == "__main__":
     print(args)
     config = read_yaml(args.config_path)
 
-    print('test')
 
     trainer = ImageNetTrainer( **config['train'])
     trainer.create_state(state_configs=config['State'])

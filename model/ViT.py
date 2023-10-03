@@ -8,6 +8,29 @@ from typing import Any
 from torchvision.models import VisionTransformer
 
 
+def posemb_sincos_2d(h, w, width, temperature=10_000., dtype=jnp.float32):
+    """Follows the MoCo v3 logic."""
+    y, x = jnp.mgrid[:h, :w]
+
+    assert width % 4 == 0, "Width must be mult of 4 for sincos posemb"
+    omega = jnp.arange(width // 4) / (width // 4 - 1)
+    omega = 1. / (temperature ** omega)
+    y = jnp.einsum("m,d->md", y.flatten(), omega)
+    x = jnp.einsum("m,d->md", x.flatten(), omega)
+    pe = jnp.concatenate([jnp.sin(x), jnp.cos(x), jnp.sin(y), jnp.cos(y)], axis=1)
+    return jnp.asarray(pe, dtype)[None, :, :]
+
+
+def get_posemb(self, typ, seqshape, width, name, dtype=jnp.float32):
+    if typ == "learn":
+        return self.param(name, nn.initializers.normal(stddev=1 / np.sqrt(width)),
+                          (1, np.prod(seqshape), width), dtype)
+    elif typ == "sincos2d":
+        return posemb_sincos_2d(*seqshape, width, dtype=dtype)
+    else:
+        raise ValueError(f"Unknown posemb type: {typ}")
+
+
 class MultiHeadAttention(nn.Module):
     dim: int
     heads: int
@@ -94,19 +117,19 @@ class ViT(nn.Module):
     patch_size: int
     depth: int
     num_classes: int = 1000
-    classifier: str = 'token'
+    classifier: str = 'mean'
+    posemb: str = 'sincos2d'
     dtype: Any = jnp.bfloat16
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
-        b, *_ = x.shape
         norm = partial(nn.LayerNorm, dtype=self.dtype)
-
         # x=Embedding(self.dim,self.patch_size)(x)
-
         x = nn.Conv(self.dim, (self.patch_size, self.patch_size), (self.patch_size, self.patch_size), dtype=self.dtype)(
             x)
+        b, h, w, c = x.shape
         x = einops.rearrange(x, 'b h w c->b (h w) c')
+        x = x + get_posemb(self, self.posemb, (h, w), c, "pos_embedding", x.dtype)
 
         if self.classifier == 'token':
             cls = self.param('cls', nn.initializers.zeros, (1, 1, self.dim), self.dtype)
@@ -118,6 +141,8 @@ class ViT(nn.Module):
         x = norm()(x)
         if self.classifier == 'token':
             x = x[:, 0]
+        elif self.classifier == 'mean':
+            x = jnp.mean(x, 1)
 
         x = nn.Dense(self.num_classes, dtype=self.dtype)(x)
         return x
