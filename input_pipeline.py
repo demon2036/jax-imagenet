@@ -190,6 +190,11 @@ def preprocess_for_eval(image_bytes, dtype=tf.float32, image_size=IMAGE_SIZE):
     return image
 
 
+def one_hot(sample):
+    sample['labels'] = tf.one_hot(sample['labels'], 1000)
+    return sample
+
+
 def create_split(
         dataset_builder,
         batch_size,
@@ -268,6 +273,8 @@ def create_split(
         # ds = ds.unbatch().batch(batch_size//16, drop_remainder=True)
         ds = ds.map(cut_mix_and_mix_up, num_parallel_calls=tf.data.experimental.AUTOTUNE)
         # ds = ds.unbatch().batch(batch_size , drop_remainder=True)
+    else:
+        ds = ds.map(one_hot)
 
     ds = ds.prefetch(prefetch)
 
@@ -282,7 +289,7 @@ if __name__ == "__main__":
     matplotlib.use('TkAgg')
 
     dataset_builder = tfds.builder('imagenet2012', data_dir='/home/john/tensorflow_datasets')
-    ds=create_split(dataset_builder,64,True,cutmix=True)
+    ds = create_split(dataset_builder, 64, True, cutmix=True)
 
 
     # def decode_example(example):
@@ -319,8 +326,6 @@ if __name__ == "__main__":
     # ds = ds.batch(64, drop_remainder=True)
     # ds = ds.map(cut_mix_and_mix_up, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     # # ds = ds.batch(64, drop_remainder=True)
-
-
 
     def visualize_dataset(dataset, title):
         plt.figure(figsize=(20, 20)).suptitle(title, fontsize=18)
