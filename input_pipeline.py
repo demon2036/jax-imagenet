@@ -191,7 +191,7 @@ def preprocess_for_eval(image_bytes, dtype=tf.float32, image_size=IMAGE_SIZE):
 
 
 def one_hot(sample):
-    sample['labels'] = tf.one_hot(sample['labels'], 1000)
+    sample['labels'] = tf.one_hot(tf.cast(sample['labels'], tf.int32), 1000)
     return sample
 
 
@@ -263,7 +263,7 @@ def create_split(
     if not train:
         ds = ds.repeat()
 
-    cut_mix = tensorflow_models.vision.augment.MixupAndCutmix(num_classes=1000, prob=0.2, switch_prob=0.0)
+    cut_mix = tensorflow_models.vision.augment.MixupAndCutmix(num_classes=1000, prob=0.2, switch_prob=0.0,mixup_alpha=0.2)
 
     def cut_mix_and_mix_up(samples):
         samples['images'], samples['labels'] = cut_mix(samples['images'], samples['labels'])
@@ -273,7 +273,7 @@ def create_split(
         # ds = ds.unbatch().batch(batch_size//16, drop_remainder=True)
         ds = ds.map(cut_mix_and_mix_up, num_parallel_calls=tf.data.experimental.AUTOTUNE)
         # ds = ds.unbatch().batch(batch_size , drop_remainder=True)
-    else:
+    elif train:
         ds = ds.map(one_hot)
 
     ds = ds.prefetch(prefetch)
