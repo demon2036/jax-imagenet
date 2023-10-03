@@ -265,8 +265,9 @@ def create_split(
         return samples
 
     if train and cutmix:
-        print(111)
+        ds = ds.unbatch().batch(batch_size//16, drop_remainder=True)
         ds = ds.map(cut_mix_and_mix_up, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+        ds = ds.unbatch().batch(batch_size , drop_remainder=True)
 
     ds = ds.prefetch(prefetch)
 
