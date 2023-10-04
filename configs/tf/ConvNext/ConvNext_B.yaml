@@ -1,11 +1,12 @@
 {
   "train": {
       image_size: 224,
-      batch_size: 1024,
+      batch_size: 4096,
       shuffle_size: 2000000,
       data_path: 'gs://jtitor-eu/data/tensorflow_datasets',
       seed: 43,
-      total_epoch: 120,
+      total_epoch: 300,
+      warmup_epoch: 20,
       model_path: 'check_points'
   },
   "State": {
@@ -21,9 +22,8 @@
       target: optax.adamw,
       params: {
         learning_rate: 4.0e-3,
-#        b1: 0.9,
-#        b2: 0.99,
-#        weight_decay: 1
+
+        weight_decay: 0.05
       }
     },
   },
