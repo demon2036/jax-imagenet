@@ -81,16 +81,16 @@ class MlpBlock(nn.Module):
             bias_init=self.bias_init)(  # pytype: disable=wrong-arg-types
             inputs)
         x = nn.gelu(x)
-        # x = nn.Dropout(rate=self.dropout_rate)(x, deterministic=deterministic)
+        x = nn.Dropout(rate=self.dropout_rate)(x, deterministic=deterministic)
         output = nn.Dense(
             features=actual_out_dim,
             dtype=self.dtype,
             kernel_init=self.kernel_init,
             bias_init=self.bias_init)(  # pytype: disable=wrong-arg-types
             x)
-        # output = nn.Dropout(
-        #     rate=self.dropout_rate)(
-        #     output, deterministic=deterministic)
+        output = nn.Dropout(
+            rate=self.dropout_rate)(
+            output, deterministic=deterministic)
         return output
 
 
@@ -136,7 +136,7 @@ class Encoder1DBlock(nn.Module):
             dropout_rate=0,
             num_heads=self.num_heads)(
             x, x)
-        #x = nn.Dropout(rate=self.dropout_rate)(x, deterministic=deterministic)
+        x = nn.Dropout(rate=self.dropout_rate)(x, deterministic=deterministic)
         x = x + inputs
 
         # MLP block.
@@ -184,7 +184,7 @@ class Encoder(nn.Module):
                 posemb_init=nn.initializers.normal(stddev=0.02),  # from BERT.
                 name='posembed_input')(
                 x)
-            # x = nn.Dropout(rate=self.dropout_rate)(x, deterministic=not train)
+            x = nn.Dropout(rate=self.dropout_rate)(x, deterministic=not train)
 
         # Input Encoder
         for lyr in range(self.num_layers):

@@ -7,7 +7,7 @@ import optax
 import tensorflow_datasets as tfds
 import flax
 import flax.jax_utils
-from flax.training.common_utils import shard
+from flax.training.common_utils import shard,shard_prng_key
 from tqdm import tqdm
 from flax.training import orbax_utils, common_utils
 
@@ -161,10 +161,10 @@ def train_step(state: MyTrainState, batch):
 
 
 @partial(jax.pmap, axis_name='batch')
-def train_step_without_bn(state: MyTrainState, batch):
+def train_step_without_bn(state: MyTrainState, batch,key):
     def loss_fn(params):
         variables = {'params': params, }
-        logits = state.apply_fn(variables, batch['images'])
+        logits = state.apply_fn(variables, batch['images'],rngs={'dropout': key})
         loss = cross_entropy_loss(logits, batch['labels'])
         # weight_penalty_params = jax.tree_util.tree_leaves(params)
         # weight_decay = 0.0001
@@ -301,6 +301,7 @@ class ImageNetTrainer(Trainer):
             for epoch in range(self.total_epoch):
                 for _ in range(self.steps_per_epoch):
                     batch = next(self.dl)
+                    self.rng,train_key=jax.random.split(self.rng)
 
                     # print(batch['labels'])
                     # x, y = batch['image'],batch['label']
@@ -310,7 +311,7 @@ class ImageNetTrainer(Trainer):
                     if has_bn:
                         self.state, metrics = train_step(self.state, batch)
                     else:
-                        self.state, metrics = train_step_without_bn(self.state, batch)
+                        self.state, metrics = train_step_without_bn(self.state, batch,shard_prng_key(train_key))
                     for k, v in metrics.items():
                         metrics.update({k: v[0]})
                     pbar.set_postfix(metrics)

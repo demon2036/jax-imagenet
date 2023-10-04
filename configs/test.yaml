@@ -14,7 +14,7 @@
     Input_Shape: [ [ 1,224,224,3 ], ],
     Model: {
 #      target: model.PoolFormer.ViT_T,
-      target: model.ViT.ViT_S,
+      target: model.ViT_test.ViT_S,
       params: {
         num_classes: 1000
       }

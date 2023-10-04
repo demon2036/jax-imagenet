@@ -10,6 +10,7 @@ from functools import partial
 class MyTrainState(TrainState):
     batch_stats: Any = None
     ema_params: Any = None
+    key:Any=None
 
 
 def create_state(rng, model_cls, input_shapes, train_state, print_model=True, optimizer_dict=None, batch_size=1,
@@ -99,9 +100,11 @@ def create_state_by_config2(rng, print_model=True, state_configs={}, lr_fn=None)
     inputs = list(map(lambda shape: jnp.empty(shape), state_configs['Input_Shape']))
     model = create_obj_by_config(state_configs['Model'])
 
+    rng,dropout_key=jax.random.split(rng)
+
     if print_model:
-        print(model.tabulate(rng, *inputs, z_rng=rng, depth=1, console_kwargs={'width': 200}))
-    variables = model.init(rng, *inputs, z_rng=rng)
+        print(model.tabulate(rng, *inputs, train=False,z_rng=rng, depth=1, console_kwargs={'width': 200}),)
+    variables = model.init(rng, *inputs, z_rng=rng,train=False,)
 
     if lr_fn is None:
         lr_fn = create_learning_rate_fn(base_learning_rate=state_configs['Optimizer']['params']['learning_rate'])
@@ -116,7 +119,7 @@ def create_state_by_config2(rng, print_model=True, state_configs={}, lr_fn=None)
     args = tuple()
     args += (create_obj_by_config(state_configs['Optimizer']),)
     tx = optax.chain(
-        optax.clip_by_global_norm(0.01),
+        optax.clip_by_global_norm(1),
         *args,
         # optax.clip_by_global_norm(1),
     )
@@ -127,4 +130,5 @@ def create_state_by_config2(rng, print_model=True, state_configs={}, lr_fn=None)
                               params=variables['params'],
                               tx=tx,
                               batch_stats=variables['batch_stats'] if 'batch_stats' in variables.keys() else None,
+                              key=dropout_key,
                               ema_params=variables['params'])
