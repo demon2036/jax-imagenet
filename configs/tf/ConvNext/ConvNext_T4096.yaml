@@ -1,0 +1,31 @@
+{
+  "train": {
+      image_size: 224,
+      batch_size: 1024,
+      shuffle_size: 2000000,
+      data_path: 'gs://jtitor-eu/data/tensorflow_datasets',
+      seed: 43,
+      total_epoch: 300,
+      warmup_epoch: 20,
+      model_path: 'check_points'
+  },
+  "State": {
+    target: modules.state_utils.MyTrainState,
+    Input_Shape: [ [ 1,224,224,3 ], ],
+    ema: 0.999,
+    Model: {
+      target: model.ConvNext.ConvNext_T,
+      params: {
+        num_classes: 1000
+      }
+    },
+    Optimizer: {
+      target: optax.adamw,
+      params: {
+        learning_rate: 4.0e-3,
+        weight_decay: 0.05
+      }
+    },
+  },
+
+}
