@@ -7,7 +7,7 @@ import optax
 import tensorflow_datasets as tfds
 import flax
 import flax.jax_utils
-from flax.training.common_utils import shard,shard_prng_key
+from flax.training.common_utils import shard, shard_prng_key
 from tqdm import tqdm
 from flax.training import orbax_utils, common_utils
 
@@ -161,10 +161,10 @@ def train_step(state: MyTrainState, batch):
 
 
 @partial(jax.pmap, axis_name='batch')
-def train_step_without_bn(state: MyTrainState, batch,key):
+def train_step_without_bn(state: MyTrainState, batch, key):
     def loss_fn(params):
         variables = {'params': params, }
-        logits = state.apply_fn(variables, batch['images'],rngs={'dropout': key})
+        logits = state.apply_fn(variables, batch['images'], rngs={'dropout': key})
         loss = cross_entropy_loss(logits, batch['labels'])
         # weight_penalty_params = jax.tree_util.tree_leaves(params)
         # weight_decay = 0.0001
@@ -191,9 +191,9 @@ def train_step_without_bn(state: MyTrainState, batch,key):
 
 
 @partial(jax.pmap, axis_name='batch', )
-def eval_step(state, batch):
+def eval_step(state:MyTrainState, batch):
     # variables = {'params': state.params, 'batch_stats': state.batch_stats}
-    variables = {'params': state.params, }
+    variables = {'params': state.ema_params if state.ema_params is not None else state.params, }
 
     if state.batch_stats is not None:
         variables.update({'batch_stats': state.batch_stats})
@@ -231,6 +231,15 @@ def sync_batch_stats(state):
     return state.replace(batch_stats=cross_replica_mean(state.batch_stats))
 
 
+@partial(jax.pmap, )
+def update_ema(state: MyTrainState, finished_steps ):
+    ema_decay = min(state.ema_decay, (1 + finished_steps) / (10 + finished_steps))
+    new_ema_params = jax.tree_map(lambda ema, normal: ema * ema_decay + (1 - ema_decay) * normal, state.ema_params,
+                                  state.params)
+    state = state.replace(ema_params=new_ema_params)
+    return state
+
+
 class ImageNetTrainer(Trainer):
     def __init__(self,
                  state=None,
@@ -244,10 +253,10 @@ class ImageNetTrainer(Trainer):
         self.template_ckpt = {'model': self.state, 'steps': self.finished_steps}
 
     def create_state(self, state_configs):
-        lr_fn = partial(create_learning_rate_fn, num_epochs=self.total_epoch, steps_per_epoch=self.steps_per_epoch)
+        lr_fn = partial(create_learning_rate_fn, num_epochs=self.total_epoch, steps_per_epoch=self.steps_per_epoch,
+                        warmup_epochs=self.warmup_epoch)
         self.state = create_state_by_config2(rng=self.rng, state_configs=state_configs, lr_fn=lr_fn)
         self.template_ckpt = {'model': self.state, 'steps': self.finished_steps}
-
 
     def load(self, model_path=None, template_ckpt=None):
         if model_path is not None:
@@ -301,7 +310,7 @@ class ImageNetTrainer(Trainer):
             for epoch in range(self.total_epoch):
                 for _ in range(self.steps_per_epoch):
                     batch = next(self.dl)
-                    self.rng,train_key=jax.random.split(self.rng)
+                    self.rng, train_key = jax.random.split(self.rng)
 
                     # print(batch['labels'])
                     # x, y = batch['image'],batch['label']
@@ -311,12 +320,18 @@ class ImageNetTrainer(Trainer):
                     if has_bn:
                         self.state, metrics = train_step(self.state, batch)
                     else:
-                        self.state, metrics = train_step_without_bn(self.state, batch,shard_prng_key(train_key))
+                        self.state, metrics = train_step_without_bn(self.state, batch, shard_prng_key(train_key))
                     for k, v in metrics.items():
                         metrics.update({k: v[0]})
                     pbar.set_postfix(metrics)
                     pbar.update(1)
                     self.finished_steps += 1
+
+                    if self.state.ema_decay is not None and self.finished_steps % 1 == 0:
+                        finished_steps = flax.jax_utils.replicate(jnp.array([self.finished_steps]))
+                        self.state = update_ema(self.state, finished_steps)
+
+
                 print()
 
                 if (epoch + 1) % 10 == 0:

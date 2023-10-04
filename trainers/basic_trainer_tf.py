@@ -31,6 +31,7 @@ class Trainer:
                  num_workers=8,
                  shuffle_size=10000,
                  drop_last=True,
+                 warmup_epoch=5,
                  try_gcs=False,
                  seed=43,
                  total_epoch=90,
@@ -60,3 +61,4 @@ class Trainer:
         self.finished_steps = 0
         self.steps_per_epoch = dataset_builder.info.splits['train'].num_examples // batch_size
         self.total_steps = self.steps_per_epoch * self.total_epoch
+        self.warmup_epoch=warmup_epoch

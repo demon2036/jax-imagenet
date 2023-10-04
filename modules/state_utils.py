@@ -10,7 +10,8 @@ from functools import partial
 class MyTrainState(TrainState):
     batch_stats: Any = None
     ema_params: Any = None
-    key:Any=None
+    ema_decay: Any = None
+    key: Any = None
 
 
 def create_state(rng, model_cls, input_shapes, train_state, print_model=True, optimizer_dict=None, batch_size=1,
@@ -78,7 +79,7 @@ def create_learning_rate_fn(
         warmup_epochs=5,
         num_epochs=90
 ):
-    print(base_learning_rate,steps_per_epoch,warmup_epochs,num_epochs)
+    print(base_learning_rate, steps_per_epoch, warmup_epochs, num_epochs)
     """Create learning rate schedule."""
     warmup_fn = optax.linear_schedule(
         init_value=0.0,
@@ -100,16 +101,16 @@ def create_state_by_config2(rng, print_model=True, state_configs={}, lr_fn=None)
     inputs = list(map(lambda shape: jnp.empty(shape), state_configs['Input_Shape']))
     model = create_obj_by_config(state_configs['Model'])
 
-    rng,dropout_key=jax.random.split(rng)
+    rng, dropout_key = jax.random.split(rng)
 
     if print_model:
-        print(model.tabulate(rng, *inputs, train=False,z_rng=rng, depth=1, console_kwargs={'width': 200}),)
-    variables = model.init(rng, *inputs, z_rng=rng,train=False,)
+        print(model.tabulate(rng, *inputs, train=False, z_rng=rng, depth=1, console_kwargs={'width': 200}), )
+    variables = model.init(rng, *inputs, z_rng=rng, train=False, )
 
     if lr_fn is None:
         lr_fn = create_learning_rate_fn(base_learning_rate=state_configs['Optimizer']['params']['learning_rate'])
     else:
-        lr_fn = lr_fn(base_learning_rate=state_configs['Optimizer']['params']['learning_rate'])
+        lr_fn = lr_fn(base_learning_rate=state_configs['Optimizer']['params']['learning_rate'], )
 
     # print(learning_rate_fn,create_learning_rate_fn)
     #
@@ -131,4 +132,5 @@ def create_state_by_config2(rng, print_model=True, state_configs={}, lr_fn=None)
                               tx=tx,
                               batch_stats=variables['batch_stats'] if 'batch_stats' in variables.keys() else None,
                               key=dropout_key,
-                              ema_params=variables['params'])
+                              ema_params=variables['params'] if 'ema_decay' in state_configs else None,
+                              ema_decay=state_configs['ema_decay'] if 'ema_decay' in state_configs else None)

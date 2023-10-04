@@ -15,6 +15,7 @@
     Model: {
 #      target: model.PoolFormer.ViT_T,
       target: model.ViT_test.ViT_S,
+      ema_decay: 0.9999,
       params: {
         num_classes: 1000
       }
