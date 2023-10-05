@@ -27,8 +27,8 @@ CROP_PADDING = 32
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 
-MEAN_RGB = [0, 0, 0.]
-STDDEV_RGB = [1, 1, 1]
+# MEAN_RGB = [0, 0, 0.]
+# STDDEV_RGB = [1, 1, 1]
 
 
 def distorted_bounding_box_crop(
