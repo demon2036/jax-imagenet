@@ -8,7 +8,7 @@
       total_epoch: 90,
       warmup_epoch: 10,
       model_path: 'check_points',
-      cut_mix: True
+#      cut_mix: True
   },
   "State": {
     target: modules.state_utils.MyTrainState,

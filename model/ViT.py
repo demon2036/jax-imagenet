@@ -117,7 +117,7 @@ class ViT(nn.Module):
     patch_size: int
     depth: int
     num_classes: int = 1000
-    classifier: str = 'mean'
+    classifier: str = 'token'
     posemb: str = 'sincos2d'
     dtype: Any = jnp.bfloat16
 
