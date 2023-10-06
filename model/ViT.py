@@ -100,6 +100,7 @@ class Block(nn.Module):
 class Embedding(nn.Module):
     din: int
     patch_size: int
+    dtype: Any = jnp.bfloat16
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
@@ -107,7 +108,7 @@ class Embedding(nn.Module):
         res = 0
         while i < self.patch_size:
             i += 2
-            res += nn.Conv(self.din, (i, i), (self.patch_size, self.patch_size), padding='same')(x)
+            res += nn.Conv(self.din, (i, i), (self.patch_size, self.patch_size), padding='same', dtype=self.dtype)(x)
         return res
 
 
@@ -119,14 +120,25 @@ class ViT(nn.Module):
     num_classes: int = 1000
     classifier: str = 'token'
     posemb: str = 'sincos2d'
+    embedding: str = 'origin'
     dtype: Any = jnp.bfloat16
 
     @nn.compact
     def __call__(self, x, *args, **kwargs):
         norm = partial(nn.LayerNorm, dtype=self.dtype)
         # x=Embedding(self.dim,self.patch_size)(x)
-        x = nn.Conv(self.dim, (self.patch_size, self.patch_size), (self.patch_size, self.patch_size), dtype=self.dtype)(
-            x)
+
+        if self.embedding == 'origin':
+            x = nn.Conv(self.dim, (self.patch_size, self.patch_size), (self.patch_size, self.patch_size),
+                        dtype=self.dtype)(x)
+        elif self.embedding == 'my':
+            x = Embedding(self.dim, self.patch_size, dtype=self.dtype)(x)
+        elif self.embedding == 'multi':
+            for _ in range(4):
+                x = nn.Conv(self.dim, (3, 3), (2, 2), padding='same', dtype=self.dtype)(x)
+        else:
+            raise NotImplemented()
+
         b, h, w, c = x.shape
         x = einops.rearrange(x, 'b h w c->b (h w) c')
         x = x + get_posemb(self, self.posemb, (h, w), c, "pos_embedding", x.dtype)
