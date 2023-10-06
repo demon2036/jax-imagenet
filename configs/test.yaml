@@ -7,7 +7,7 @@
       seed: 43,
       total_epoch: 90,
       model_path: 'check_points',
-      cut_mix: True
+#      cut_mix: True
   },
   "State": {
     target: modules.state_utils.MyTrainState,

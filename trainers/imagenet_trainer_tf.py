@@ -12,7 +12,7 @@ from tqdm import tqdm
 from flax.training import orbax_utils, common_utils
 
 from input_pipeline import create_split
-from modules.utils import create_checkpoint_manager, default, load_ckpt, torch_to_jax
+from modules.utils import create_checkpoint_manager, default, load_ckpt, torch_to_jax, mixup
 from trainers.basic_trainer_tf import Trainer
 from modules.state_utils import *
 
@@ -162,8 +162,14 @@ def train_step(state: MyTrainState, batch):
 
 @partial(jax.pmap, axis_name='batch')
 def train_step_without_bn(state: MyTrainState, batch, key):
+    key,temp, batch = mixup(key, images=batch['images'],labels=batch['labels'])
+
+    print(temp)
+    print(batch)
+
     def loss_fn(params):
         variables = {'params': params, }
+
         logits = state.apply_fn(variables, batch['images'], rngs={'dropout': key})
         loss = cross_entropy_loss(logits, batch['labels'])
         # weight_penalty_params = jax.tree_util.tree_leaves(params)
@@ -191,7 +197,7 @@ def train_step_without_bn(state: MyTrainState, batch, key):
 
 
 @partial(jax.pmap, axis_name='batch', )
-def eval_step(state:MyTrainState, batch):
+def eval_step(state: MyTrainState, batch):
     # variables = {'params': state.params, 'batch_stats': state.batch_stats}
     variables = {'params': state.ema_params if state.ema_params is not None else state.params, }
 
@@ -232,7 +238,7 @@ def sync_batch_stats(state):
 
 
 @partial(jax.pmap, )
-def update_ema(state: MyTrainState, finished_steps ):
+def update_ema(state: MyTrainState, finished_steps):
     ema_decay = min(state.ema_decay, (1 + finished_steps) / (10 + finished_steps))
     new_ema_params = jax.tree_map(lambda ema, normal: ema * ema_decay + (1 - ema_decay) * normal, state.ema_params,
                                   state.params)
@@ -330,7 +336,6 @@ class ImageNetTrainer(Trainer):
                     if self.state.ema_decay is not None and self.finished_steps % 1 == 0:
                         finished_steps = flax.jax_utils.replicate(jnp.array([self.finished_steps]))
                         self.state = update_ema(self.state, finished_steps)
-
 
                 print()
 

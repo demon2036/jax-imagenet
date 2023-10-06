@@ -5,6 +5,7 @@ import numpy as np
 import orbax
 import yaml
 from orbax import checkpoint
+import jax
 
 
 def exists(val):
@@ -45,6 +46,51 @@ def get_obj_from_str(string: str):
 
 
 def torch_to_jax(x):
-    x = x.numpy()
+    x = np.asarray(x)
     x = jnp.asarray(x)
     return x
+
+
+
+
+
+
+
+def mixup(rng, *things, p=0.1, fold_in=None, n=2, **more_things):
+  """Perform mixup https://arxiv.org/abs/1710.09412.
+
+  Args:
+    rng: The random key to use.
+    *things: further arguments are the arrays to be mixed.
+    p: the beta/dirichlet concentration parameter, typically 0.1 or 0.2.
+    fold_in: One of None, "host", "device", or "sample". Whether to sample a
+      global mixing coefficient, one per host, one per device, or one per
+      example, respectively. The latter is usually a bad idea.
+    n: with how many other images an image is mixed. Default mixup is n=2.
+    **more_things: further kwargs are arrays to be mixed.  See also (internal link)
+      for further experiments and investigations.
+
+  Returns:
+    A new rng key. A list of mixed *things. A dict of mixed **more_things.
+  """
+  rng, rng_m = jax.random.split(rng, 2)
+  if fold_in == "host":
+    rng_m = jax.random.fold_in(rng_m, jax.process_index())
+  elif fold_in in ("device", "sample"):
+    rng_m = jax.random.fold_in(rng_m, jax.lax.axis_index("batch"))
+  ashape = (len(things[0]),) if fold_in == "sample" else (1,)
+  alpha = jax.random.dirichlet(rng_m, jnp.array([p]*n), ashape)
+  # Sort alpha values in decreasing order. This avoids destroying examples when
+  # the concentration parameter p is very small, due to Dirichlet's symmetry.
+  alpha = -jnp.sort(-alpha, axis=-1)
+  def mix(batch):
+    if batch is None: return None  # For call-side convenience!
+    def mul(a, b):  # B * BHWC -> B111 * BHWC
+      return b * jnp.expand_dims(a, tuple(range(1, b.ndim)))
+    return sum(mul(alpha[:, i], jnp.roll(batch, i, axis=0)) for i in range(n))
+  return rng, map(mix, things), {k: mix(v) for k, v in more_things.items()}
+
+
+
+
+
