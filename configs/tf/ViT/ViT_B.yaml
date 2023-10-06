@@ -6,8 +6,9 @@
       data_path: 'gs://jtitor-eu/data/tensorflow_datasets',
       seed: 43,
       total_epoch: 90,
+      warmup_epoch: 10,
       model_path: 'check_points',
-      cut_mix: True
+#      cut_mix: True
   },
   "State": {
     target: modules.state_utils.MyTrainState,

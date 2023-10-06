@@ -27,6 +27,11 @@ if __name__ == "__main__":
     trainer = ImageNetTrainer( **config['train'])
     trainer.create_state(state_configs=config['State'])
     trainer.load()
+
+
+
+
+
     # trainer.state = flax.jax_utils.replicate(trainer.state)
     # trainer.eval()
     # trainer.state = flax.jax_utils.unreplicate(trainer.state)
@@ -35,4 +40,7 @@ if __name__ == "__main__":
     # trainer.eval()
 
     trainer.train()
+
+
+
     # trainer.test()

@@ -162,7 +162,7 @@ def train_step(state: MyTrainState, batch):
 
 @partial(jax.pmap, axis_name='batch')
 def train_step_without_bn(state: MyTrainState, batch, key):
-    key,temp, batch = mixup(key, images=batch['images'],labels=batch['labels'])
+    key,temp, batch = mixup(key, images=batch['images'],labels=batch['labels'],p=0.2)
 
     print(temp)
     print(batch)
@@ -316,6 +316,7 @@ class ImageNetTrainer(Trainer):
             for epoch in range(self.total_epoch):
                 for _ in range(self.steps_per_epoch):
                     batch = next(self.dl)
+
                     self.rng, train_key = jax.random.split(self.rng)
 
                     # print(batch['labels'])
