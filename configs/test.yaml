@@ -14,8 +14,8 @@
     target: modules.state_utils.MyTrainState,
     Input_Shape: [ [ 1,224,224,3 ], ],
     Model: {
-      target: model.ViT.ViT_T,
-#      target: model.PyramidViT.PVT_Tiny,
+#      target: model.ViT.ViT_T,
+      target: model.PyramidViT.PVT_S,
       ema_decay: 0.9999,
       params: {
         num_classes: 1000,
