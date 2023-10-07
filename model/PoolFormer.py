@@ -25,8 +25,8 @@ class Block(nn.Module):
     @nn.compact
     def __call__(self, x, *args, **kwargs):
         y = self.norm()(x)
-        y = nn.max_pool(y, (3, 3), padding='same')
-        x = y
+        y = nn.max_pool(y, (3, 3), padding='same')-y
+        x = y+x
         y = self.norm()(x)
         y = MLP(self.dim, self.dtype)(y)
         return x + y

@@ -162,7 +162,7 @@ def train_step(state: MyTrainState, batch):
 
 @partial(jax.pmap, axis_name='batch')
 def train_step_without_bn(state: MyTrainState, batch, key):
-    key,temp, batch = mixup(key, images=batch['images'],labels=batch['labels'],p=0.2)
+    key, temp, batch = mixup(key, images=batch['images'], labels=batch['labels'], p=0.2)
 
     print(temp)
     print(batch)
@@ -290,9 +290,7 @@ class ImageNetTrainer(Trainer):
             eval_metrics.append(metrics)
         eval_metrics = common_utils.get_metrics(eval_metrics)
         summary = jax.tree_util.tree_map(lambda x: x.mean(), eval_metrics)
-        print('\n' * 3)
-        print(summary)
-        print('\n' * 3)
+        self.pbar.write(f'\n {summary} \n')
 
     def test(self):
         # self.state = flax.jax_utils.replicate(self.state)
@@ -305,48 +303,49 @@ class ImageNetTrainer(Trainer):
         eval_metrics = common_utils.get_metrics(eval_metrics)
         print(eval_metrics)
         summary = jax.tree_util.tree_map(lambda x: x.mean(), eval_metrics)
-        print(summary)
+
         # self.state = flax.jax_utils.unreplicate(self.state)
 
     def train(self):
         has_bn = self.state.batch_stats is not None
         self.state = flax.jax_utils.replicate(self.state)
 
-        with tqdm(total=self.total_epoch * self.steps_per_epoch) as pbar:
-            for epoch in range(self.total_epoch):
-                for _ in range(self.steps_per_epoch):
-                    batch = next(self.dl)
+        for epoch in range(self.total_epoch):
+            for _ in range(self.steps_per_epoch):
+                batch = next(self.dl)
 
-                    self.rng, train_key = jax.random.split(self.rng)
+                self.rng, train_key = jax.random.split(self.rng)
 
-                    # print(batch['labels'])
-                    # x, y = batch['image'],batch['label']
-                    # x, y = torch_to_jax(x), torch_to_jax(y)
-                    # x, y = shard(x), shard(y)
-                    # print(x.shape)
-                    if has_bn:
-                        self.state, metrics = train_step(self.state, batch)
-                    else:
-                        self.state, metrics = train_step_without_bn(self.state, batch, shard_prng_key(train_key))
-                    for k, v in metrics.items():
-                        metrics.update({k: v[0]})
-                    pbar.set_postfix(metrics)
-                    pbar.update(1)
-                    self.finished_steps += 1
+                # print(batch['labels'])
+                # x, y = batch['image'],batch['label']
+                # x, y = torch_to_jax(x), torch_to_jax(y)
+                # x, y = shard(x), shard(y)
+                # print(x.shape)
+                if has_bn:
+                    self.state, metrics = train_step(self.state, batch)
+                else:
+                    self.state, metrics = train_step_without_bn(self.state, batch, shard_prng_key(train_key))
+                for k, v in metrics.items():
+                    metrics.update({k: v[0]})
+                self.pbar.set_postfix(metrics)
+                self.pbar.update(1)
 
-                    if self.state.ema_decay is not None and self.finished_steps % 1 == 0:
-                        finished_steps = flax.jax_utils.replicate(jnp.array([self.finished_steps]))
-                        self.state = update_ema(self.state, finished_steps)
+                self.finished_steps += 1
 
-                print()
+                if self.state.ema_decay is not None and self.finished_steps % 1 == 0:
+                    finished_steps = flax.jax_utils.replicate(jnp.array([self.finished_steps]))
+                    self.state = update_ema(self.state, finished_steps)
+                self.eval()
 
-                if (epoch + 1) % 10 == 0:
-                    if has_bn:
-                        self.state = sync_batch_stats(self.state)
-                    self.eval()
-                    self.state = flax.jax_utils.unreplicate(self.state)
-                    self.save()
-                    self.state = flax.jax_utils.replicate(self.state)
+            print()
+
+            if (epoch + 1) % 10 == 0:
+                if has_bn:
+                    self.state = sync_batch_stats(self.state)
+                self.eval()
+                self.state = flax.jax_utils.unreplicate(self.state)
+                self.save()
+                self.state = flax.jax_utils.replicate(self.state)
 
 
 if __name__ == "__main__":

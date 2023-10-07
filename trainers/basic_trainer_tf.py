@@ -1,4 +1,5 @@
 import flax.jax_utils
+from tqdm import tqdm
 
 from data.datasets import create_input_pipeline
 import jax
@@ -42,7 +43,7 @@ class Trainer:
         # 'gs://jtitor-eu/data/tensorflow_datasets'
         dataset_builder = tfds.builder('imagenet2012', try_gcs=try_gcs,
                                        data_dir=data_path)  # try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets'
-        ds_train = create_split(dataset_builder, batch_size=batch_size, train=True, cache=True,cutmix=cut_mix)
+        ds_train = create_split(dataset_builder, batch_size=batch_size, train=True, cache=True, cutmix=cut_mix)
         ds_eval = create_split(dataset_builder, batch_size=batch_size, train=False, cache=True)
 
         self.dl = map(prepare_tf_data, ds_train)
@@ -61,4 +62,5 @@ class Trainer:
         self.finished_steps = 0
         self.steps_per_epoch = dataset_builder.info.splits['train'].num_examples // batch_size
         self.total_steps = self.steps_per_epoch * self.total_epoch
-        self.warmup_epoch=warmup_epoch
+        self.warmup_epoch = warmup_epoch
+        self.pbar = tqdm(total=self.total_epoch * self.steps_per_epoch)
