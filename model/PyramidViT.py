@@ -124,3 +124,10 @@ class PyramidViT(nn.Module):
 
 PVT_Tiny = partial(PyramidViT, dims=[64, 128, 320, 512], patch_sizes=[4, 2, 2, 2], num_heads=[1, 2, 5, 8],
                    expand_ratios=[8, 8, 4, 4], num_blocks=[2, 2, 2, 2],reduction_ratios=[8,4,2,1])
+PVT_S = partial(PyramidViT, dims=[64, 128, 320, 512], patch_sizes=[4, 2, 2, 2], num_heads=[1, 2, 5, 8],
+                   expand_ratios=[8, 8, 4, 4], num_blocks=[3, 3, 6, 3],reduction_ratios=[8,4,2,1])
+PVT_M = partial(PyramidViT, dims=[64, 128, 320, 512], patch_sizes=[4, 2, 2, 2], num_heads=[1, 2, 5, 8],
+                   expand_ratios=[8, 8, 4, 4], num_blocks=[3, 3, 18, 3],reduction_ratios=[8,4,2,1])
+PVT_L = partial(PyramidViT, dims=[64, 128, 320, 512], patch_sizes=[4, 2, 2, 2], num_heads=[1, 2, 5, 8],
+                   expand_ratios=[8, 8, 4, 4], num_blocks=[3, 8, 27, 3],reduction_ratios=[8,4,2,1])
+

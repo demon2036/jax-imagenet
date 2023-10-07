@@ -335,10 +335,7 @@ class ImageNetTrainer(Trainer):
                 if self.state.ema_decay is not None and self.finished_steps % 1 == 0:
                     finished_steps = flax.jax_utils.replicate(jnp.array([self.finished_steps]))
                     self.state = update_ema(self.state, finished_steps)
-                self.eval()
-
             print()
-
             if (epoch + 1) % 10 == 0:
                 if has_bn:
                     self.state = sync_batch_stats(self.state)
