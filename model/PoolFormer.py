@@ -56,3 +56,4 @@ class PoolFormer(nn.Module):
 PoolFormer_T = partial(PoolFormer, dim=192, patch_size=16, depth=12)
 PoolFormer_S = partial(PoolFormer, dim=384, patch_size=16, depth=12)
 PoolFormer_B = partial(PoolFormer, dim=768, patch_size=16, depth=12)
+
