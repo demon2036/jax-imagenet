@@ -55,9 +55,10 @@ def _query_chunk_attention(query, key, value, precision, key_chunk_size=4096):
 
 
 def memory_efficient_attention(query, key, value, precision=jax.lax.Precision.HIGHEST,
-                               query_chunk_size=49*8):
+                               query_chunk_size=49 * 8):
     """Memory-efficient multi-head dot product attention."""
     b, num_q, num_heads, q_features = query.shape
+
     def chunk_scanner(chunk_idx, _):
         query_chunk = jax.lax.dynamic_slice(
             query, (0, chunk_idx, 0, 0),
@@ -72,6 +73,7 @@ def memory_efficient_attention(query, key, value, precision=jax.lax.Precision.HI
 class MultiHeadSelfAttention(nn.Module):
     dim: int
     num_heads: int
+    reduction_ratio: int = 1
     attention_type: Any = 'math'
     dtype: Any = jnp.bfloat16
 
@@ -79,6 +81,13 @@ class MultiHeadSelfAttention(nn.Module):
     def __call__(self, x, *args, **kwargs):
         x = nn.Dense(self.dim * 3, self.dtype)(x)
         q, k, v = tuple(einops.rearrange(x, 'b n (k h d)->k b n h d', k=3, h=self.num_heads))
+
+        if self.reduction_ratio > 1:
+            v = einops.rearrange(v, 'b (n r) h d->b n h (d r)', r=self.reduction_ratio ** 2)
+            k = einops.rearrange(k, 'b (n r) h d->b n h (d r)', r=self.reduction_ratio ** 2)
+            v = nn.Dense(self.dim//self.num_heads, dtype=self.dtype)(v)
+            k = nn.Dense(self.dim//self.num_heads, dtype=self.dtype)(k)
+
         if self.attention_type == 'math':
             out = dot_product_attention(q, k, v)
         elif self.attention_type == 'memory_efficient':
