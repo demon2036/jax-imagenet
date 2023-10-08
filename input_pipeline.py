@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """ImageNet input pipeline."""
+from collections import abc
 import random
 
 import jax
@@ -22,14 +23,18 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 import tensorflow_models
 
+import autoaugment
+
 IMAGE_SIZE = 224
 CROP_PADDING = 32
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 
-MEAN_RGB = [0, 0, 0.]
-STDDEV_RGB = [1, 1, 1]
-
+# MEAN_RGB = [0, 0, 0]
+# STDDEV_RGB = [1, 1, 1]
+#
+# MEAN_RGB = [0.5*255, 0.5*255, 0.5*255]
+# STDDEV_RGB = [0.5*255, 0.5*255, 0.5*255]
 
 def distorted_bounding_box_crop(
         image_bytes,
@@ -183,6 +188,108 @@ def preprocess_for_eval(image_bytes, dtype=tf.float32, image_size=IMAGE_SIZE):
   Returns:
     A preprocessed image `Tensor`.
   """
+    # image=tf.io.decode_image(image_bytes)
+    image = _decode_and_center_crop(image_bytes, image_size)
+    image = tf.reshape(image, [image_size, image_size, 3])
+    image = normalize_image(image)
+    image = tf.image.convert_image_dtype(image, dtype=dtype)
+    return image
+
+
+def get_resize_small(images, smaller_size, method="area", antialias=False):
+    """Resizes the smaller side to `smaller_size` keeping aspect ratio.
+
+  Args:
+    smaller_size: an integer, that represents a new size of the smaller side of
+      an input image.
+    method: the resize method. `area` is a meaningful, bwd-compat default.
+    antialias: see tf.image.resize. Ideally set to True for all new configs.
+
+  Returns:
+    A function, that resizes an image and preserves its aspect ratio.
+
+  Note:
+    backwards-compat for "area"+antialias tested here:
+    (internal link)
+  """
+
+    def _resize_small(image):  # pylint: disable=missing-docstring
+        h, w = tf.shape(image)[0], tf.shape(image)[1]
+
+        # Figure out the necessary h/w.
+        ratio = (
+                tf.cast(smaller_size, tf.float32) /
+                tf.cast(tf.minimum(h, w), tf.float32))
+        h = tf.cast(tf.round(tf.cast(h, tf.float32) * ratio), tf.int32)
+        w = tf.cast(tf.round(tf.cast(w, tf.float32) * ratio), tf.int32)
+
+        dtype = image.dtype
+        image = tf.image.resize(image, (h, w), method=method, antialias=antialias)
+        return tf.cast(image, dtype)
+
+    return _resize_small(images)
+
+
+def maybe_repeat(arg, n_reps):
+    if not isinstance(arg, abc.Sequence):
+        arg = (arg,) * n_reps
+    return arg
+
+
+def get_central_crop(images, crop_size):
+    """Makes central crop of a given size.
+
+  Args:
+    crop_size: either an integer H, where H is both the height and width of the
+      central crop, or a list or tuple [H, W] of integers, where H and W are
+      height and width of the central crop respectively.
+
+  Returns:
+    A function, that applies central crop.
+  """
+    crop_size = maybe_repeat(crop_size, 2)
+
+    def _crop(image):
+        h, w = crop_size[0], crop_size[1]
+        dy = (tf.shape(image)[0] - h) // 2
+        dx = (tf.shape(image)[1] - w) // 2
+        return tf.image.crop_to_bounding_box(image, dy, dx, h, w)
+
+    return _crop(images)
+
+
+def preprocess_for_eval_test(image_bytes, dtype=tf.float32, image_size=IMAGE_SIZE):
+    """Preprocesses the given image for evaluation.
+
+  Args:
+    image_bytes: `Tensor` representing an image binary of arbitrary size.
+    dtype: data type of the image.
+    image_size: image size.
+
+  Returns:
+    A preprocessed image `Tensor`.
+  """
+    image = tf.io.decode_image(image_bytes, channels=3, expand_animations=False)
+
+    image = get_resize_small(image, 256)
+    image = get_central_crop(image, 224)
+    image = tf.cast(image, tf.uint8)
+    image = normalize_image(image)
+    image = tf.image.convert_image_dtype(image, dtype=dtype)
+    return image
+
+
+def preprocess_for_eval(image_bytes, dtype=tf.float32, image_size=IMAGE_SIZE):
+    """Preprocesses the given image for evaluation.
+
+  Args:
+    image_bytes: `Tensor` representing an image binary of arbitrary size.
+    dtype: data type of the image.
+    image_size: image size.
+
+  Returns:
+    A preprocessed image `Tensor`.
+  """
     image = _decode_and_center_crop(image_bytes, image_size)
     image = tf.reshape(image, [image_size, image_size, 3])
     image = normalize_image(image)
@@ -195,6 +302,58 @@ def one_hot(sample):
     return sample
 
 
+def get_randaug(num_layers: int = 2, magnitude: int = 10):
+    """Creates a function that applies RandAugment.
+
+  RandAugment is from the paper https://arxiv.org/abs/1909.13719,
+
+  Args:
+    num_layers: Integer, the number of augmentation transformations to apply
+      sequentially to an image. Represented as (N) in the paper. Usually best
+      values will be in the range [1, 3].
+    magnitude: Integer, shared magnitude across all augmentation operations.
+      Represented as (M) in the paper. Usually best values are in the range
+      [5, 30].
+
+  Returns:
+    a function that applies RandAugment.
+  """
+
+    def _randaug(image):
+        return autoaugment.distort_image_with_randaugment(
+            image, num_layers, magnitude)
+
+    return _randaug
+
+
+rand_augment = get_randaug()
+
+
+def preprocess_for_train_test(image_bytes, dtype=tf.float32, image_size=IMAGE_SIZE):
+    """Preprocesses the given image for training.
+
+  Args:
+    image_bytes: `Tensor` representing an image binary of arbitrary size.
+    dtype: data type of the image.
+    image_size: image size.
+
+  Returns:
+    A preprocessed image `Tensor`.
+  """
+    image = _decode_and_random_crop(image_bytes, image_size)
+    image = tf.reshape(image, [image_size, image_size, 3])
+
+    image = tf.image.random_flip_left_right(image)
+    # image = tf.cast(image,tf.float32)
+
+    image = tf.cast(image, tf.uint8)
+    image = rand_augment(image)
+    image = tf.cast(image, dtype)
+    image = normalize_image(image)
+    image = tf.image.convert_image_dtype(image, dtype=dtype)
+    return image
+
+
 def create_split(
         dataset_builder,
         batch_size,
@@ -202,7 +361,7 @@ def create_split(
         dtype=tf.bfloat16,
         image_size=IMAGE_SIZE,
         cache=False,
-        shuffle_buffer_size=16 * 1024,
+        shuffle_buffer_size=16 * 1024,  # 16 * 1024,
         prefetch=10,
         cutmix=False
 ):
@@ -233,7 +392,8 @@ def create_split(
 
     def decode_example(example):
         if train:
-            image = preprocess_for_train(example['image'], dtype, image_size)
+            image = preprocess_for_train_test(example['image'], dtype, image_size)
+
         else:
             image = preprocess_for_eval(example['image'], dtype, image_size)
             example['label'] = tf.one_hot(example['label'], 1000)
@@ -263,7 +423,8 @@ def create_split(
     if not train:
         ds = ds.repeat()
 
-    cut_mix = tensorflow_models.vision.augment.MixupAndCutmix(num_classes=1000, prob=0.1, switch_prob=0.5,mixup_alpha=0.8)
+    cut_mix = tensorflow_models.vision.augment.MixupAndCutmix(num_classes=1000, prob=0.1, switch_prob=0.5,
+                                                              mixup_alpha=0.8)
 
     def cut_mix_and_mix_up(samples):
         samples['images'], samples['labels'] = cut_mix(samples['images'], samples['labels'])
@@ -281,7 +442,6 @@ def create_split(
     return ds
 
 
-
 if __name__ == "__main__":
 
     import keras
@@ -290,7 +450,7 @@ if __name__ == "__main__":
     matplotlib.use('TkAgg')
 
     dataset_builder = tfds.builder('imagenet2012', data_dir='/home/john/tensorflow_datasets')
-    ds = create_split(dataset_builder, 64, False, cutmix=True)
+    ds = create_split(dataset_builder, 64, True, cutmix=True)
 
 
     # def decode_example(example):
@@ -341,5 +501,5 @@ if __name__ == "__main__":
 
 
     visualize_dataset(ds, title="After CutMix and MixUp")
-    visualize_dataset(ds, title="After CutMix and MixUp")
-    visualize_dataset(ds, title="After CutMix and MixUp")
+    # visualize_dataset(ds, title="After CutMix and MixUp")
+    # visualize_dataset(ds, title="After CutMix and MixUp")

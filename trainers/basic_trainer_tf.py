@@ -43,7 +43,7 @@ class Trainer:
         # 'gs://jtitor-eu/data/tensorflow_datasets'
         dataset_builder = tfds.builder('imagenet2012', try_gcs=try_gcs,
                                        data_dir=data_path)  # try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets'
-        ds_train = create_split(dataset_builder, batch_size=batch_size, train=True, cache=True, cutmix=cut_mix)
+        ds_train = create_split(dataset_builder, batch_size=batch_size, train=True, cache=True, cutmix=cut_mix,shuffle_buffer_size=250000)
         ds_eval = create_split(dataset_builder, batch_size=batch_size, train=False, cache=True)
 
         self.dl = map(prepare_tf_data, ds_train)

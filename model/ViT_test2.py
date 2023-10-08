@@ -158,7 +158,6 @@ class ViT(nn.Module):
                 nn.Conv(self.dim, (3, 3), (1, 1), 'same', dtype=self.dtype, feature_group_count=c),
             ])(y)
             y=einops.rearrange(y,'b h w c->b (h w ) c')
-
             x = Block(self.dim, norm, self.nums_head, self.dtype)(x) + y
 
         x = norm()(x)
@@ -169,7 +168,6 @@ class ViT(nn.Module):
 
         x=nn.Dense(2000,self.dtype)(x)
         x=nn.tanh(x)
-
         x = nn.Dense(self.num_classes, dtype=self.dtype)(x)
         return x
 
