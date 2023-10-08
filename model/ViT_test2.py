@@ -167,6 +167,9 @@ class ViT(nn.Module):
         elif self.classifier == 'mean':
             x = jnp.mean(x, 1)
 
+        x=nn.Dense(2000,self.dtype)(x)
+        x=nn.tanh(x)
+
         x = nn.Dense(self.num_classes, dtype=self.dtype)(x)
         return x
 
