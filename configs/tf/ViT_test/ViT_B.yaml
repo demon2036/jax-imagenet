@@ -13,7 +13,7 @@
     target: modules.state_utils.MyTrainState,
     Input_Shape: [ [ 1,224,224,3 ], ],
     Model: {
-      target: model.ViT.ViT_B,
+      target: model.ViT_test2.ViT_B,
       params: {
         num_classes: 1000
       }
