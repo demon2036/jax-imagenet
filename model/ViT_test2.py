@@ -152,9 +152,9 @@ class ViT(nn.Module):
             y=einops.rearrange(x,'b (h w ) c ->b h w c',h=int(n**0.5))
             y = nn.Sequential([
                 nn.Conv(self.dim, (3, 3), (1, 1), 'same', dtype=self.dtype, feature_group_count=c),
-                nn.GroupNorm(),
-                nn.Conv(self.dim, (3, 3), (1, 1), 'same', dtype=self.dtype, feature_group_count=c),
                 nn.silu,
+                nn.Conv(self.dim, (3, 3), (1, 1), 'same', dtype=self.dtype, feature_group_count=c),
+                nn.GroupNorm(),
                 nn.Conv(self.dim, (3, 3), (1, 1), 'same', dtype=self.dtype, feature_group_count=c),
             ])(y)
             y=einops.rearrange(y,'b h w c->b (h w ) c')
