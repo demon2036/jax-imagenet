@@ -290,7 +290,8 @@ class ImageNetTrainer(Trainer):
             eval_metrics.append(metrics)
         eval_metrics = common_utils.get_metrics(eval_metrics)
         summary = jax.tree_util.tree_map(lambda x: x.mean(), eval_metrics)
-        self.pbar.write(f'\n {summary} \n')
+        with open('test.txt', 'a') as f:
+            f.write(f'\n test {summary} \n')
 
     def test(self):
         # self.state = flax.jax_utils.replicate(self.state)
@@ -335,6 +336,7 @@ class ImageNetTrainer(Trainer):
                 if self.state.ema_decay is not None and self.finished_steps % 1 == 0:
                     finished_steps = flax.jax_utils.replicate(jnp.array([self.finished_steps]))
                     self.state = update_ema(self.state, finished_steps)
+
             print()
             if (epoch + 1) % 10 == 0:
                 if has_bn:

@@ -27,8 +27,8 @@ CROP_PADDING = 32
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 
-# MEAN_RGB = [0, 0, 0.]
-# STDDEV_RGB = [1, 1, 1]
+MEAN_RGB = [0, 0, 0.]
+STDDEV_RGB = [1, 1, 1]
 
 
 def distorted_bounding_box_crop(
@@ -281,6 +281,7 @@ def create_split(
     return ds
 
 
+
 if __name__ == "__main__":
 
     import keras
@@ -289,7 +290,7 @@ if __name__ == "__main__":
     matplotlib.use('TkAgg')
 
     dataset_builder = tfds.builder('imagenet2012', data_dir='/home/john/tensorflow_datasets')
-    ds = create_split(dataset_builder, 64, True, cutmix=True)
+    ds = create_split(dataset_builder, 64, False, cutmix=True)
 
 
     # def decode_example(example):

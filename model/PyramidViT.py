@@ -81,9 +81,9 @@ class Stage(nn.Module):
         x = einops.rearrange(x, 'b (n p) d ->b n (p d)', p=self.patch_size ** 2)
         x = nn.Dense(self.dim, dtype=self.dtype)(x)
         b, n, d = x.shape
+        x = self.norm()(x)
         x = x + get_posemb(self, self.posemb, (n ** 0.5, n ** 0.5), d, "pos_embedding", x.dtype)
 
-        x = self.norm()(x)
         for _ in range(self.num_blocks):
             x = Block(dim=self.dim, norm=self.norm, num_heads=self.num_heads, expand_ratios=self.expand_ratios,
                       dtype=self.dtype, reduction_ratio=self.reduction_ratio)(x)
@@ -105,7 +105,7 @@ class PyramidViT(nn.Module):
     def __call__(self, x, *args, **kwargs):
         x = einops.rearrange(x, 'b h w c->b (h w) c')
 
-        norm = partial(nn.LayerNorm,dtype=self.dtype)
+        norm = partial(nn.LayerNorm, dtype=self.dtype)
 
         for dim, patch_size, num_head, expand_ratio, num_block, reduction_ratio in zip(self.dims, self.patch_sizes,
                                                                                        self.num_heads,
@@ -115,7 +115,7 @@ class PyramidViT(nn.Module):
             x = Stage(dim=dim, norm=norm, patch_size=patch_size, num_heads=num_head, expand_ratios=expand_ratio,
                       num_blocks=num_block, reduction_ratio=reduction_ratio)(x)
 
-        x=norm()(x)
+        x = norm()(x)
         x = jnp.mean(x, 1)
         x = nn.Dense(self.num_classes, dtype=self.dtype)(x)
         return x
