@@ -7,7 +7,7 @@
       seed: 43,
       total_epoch: 120,
       model_path: 'check_points',
-      cut_mix: True
+#      cut_mix: True
   },
   "State": {
     target: modules.state_utils.MyTrainState,
@@ -22,7 +22,7 @@
       target: optax.lion,
       params: {
         learning_rate: 3.0e-4,
-        weight_decay: 0.001
+        weight_decay: 1.0
       }
     },
   },

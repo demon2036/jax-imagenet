@@ -149,7 +149,7 @@ class ViT(nn.Module):
             x = jnp.concatenate([cls, x], axis=1)
         for i in range(self.depth):
             b, n, c = x.shape
-            y=einops.rearrange(x,'b (h w ) c ->b h w c',h=int(n**0.5))
+            y = einops.rearrange(x, 'b (h w ) c ->b h w c', h=int(n ** 0.5))
             y = nn.Sequential([
                 nn.Conv(self.dim, (3, 3), (1, 1), 'same', dtype=self.dtype, feature_group_count=c),
                 nn.silu,
@@ -157,7 +157,7 @@ class ViT(nn.Module):
                 nn.GroupNorm(),
                 nn.Conv(self.dim, (3, 3), (1, 1), 'same', dtype=self.dtype, feature_group_count=c),
             ])(y)
-            y=einops.rearrange(y,'b h w c->b (h w ) c')
+            y = einops.rearrange(y, 'b h w c->b (h w ) c')
             x = Block(self.dim, norm, self.nums_head, self.dtype)(x) + y
 
         x = norm()(x)
@@ -166,8 +166,8 @@ class ViT(nn.Module):
         elif self.classifier == 'mean':
             x = jnp.mean(x, 1)
 
-        x=nn.Dense(2000,self.dtype)(x)
-        x=nn.tanh(x)
+        x = nn.Dense(2000, self.dtype)(x)
+        x = nn.tanh(x)
         x = nn.Dense(self.num_classes, dtype=self.dtype)(x)
         return x
 
