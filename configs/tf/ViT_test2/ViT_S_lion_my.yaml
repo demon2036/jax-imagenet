@@ -1,0 +1,31 @@
+ViT_S_lion.yaml{
+  "train": {
+      image_size: 224,
+      batch_size: 1024,
+      shuffle_size: 2000000,
+      data_path: 'gs://jtitor-eu/data/tensorflow_datasets',
+      seed: 43,
+      total_epoch: 120,
+      model_path: 'check_points',
+#      cut_mix: True
+  },
+  "State": {
+    target: modules.state_utils.MyTrainState,
+    Input_Shape: [ [ 1,224,224,3 ], ],
+    Model: {
+      target: model.ViT_test2.ViT_S,
+      params: {
+        num_classes: 1000,
+        embedding: 'my'
+      }
+    },
+    Optimizer: {
+      target: optax.lion,
+      params: {
+        learning_rate: 3.0e-4,
+        weight_decay: 1.0
+      }
+    },
+  },
+
+}
