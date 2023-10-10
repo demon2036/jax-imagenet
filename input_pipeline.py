@@ -344,10 +344,8 @@ def preprocess_for_train_test(image_bytes, dtype=tf.float32, image_size=IMAGE_SI
     image = tf.reshape(image, [image_size, image_size, 3])
 
     image = tf.image.random_flip_left_right(image)
-    # image = tf.cast(image,tf.float32)
-
     image = tf.cast(image, tf.uint8)
-    # image = rand_augment(image)
+    image = rand_augment(image)
     image = tf.cast(image, dtype)
     image = normalize_image(image)
     image = tf.image.convert_image_dtype(image, dtype=dtype)
