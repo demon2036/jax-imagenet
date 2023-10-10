@@ -30,7 +30,7 @@ class Trainer:
                  batch_size=1,
                  data_path='./imagenet_train_shards',
                  num_workers=8,
-                 shuffle_size=10000,
+                 shuffle_size=250000,
                  drop_last=True,
                  warmup_epoch=5,
                  try_gcs=False,
@@ -38,13 +38,14 @@ class Trainer:
                  total_epoch=90,
                  model_path='check_points/Diffusion',
                  ckpt_max_to_keep=5,
-                 cut_mix=False
+                 cut_mix=False,
+                 cache=True
                  ):
         # 'gs://jtitor-eu/data/tensorflow_datasets'
         dataset_builder = tfds.builder('imagenet2012', try_gcs=try_gcs,
                                        data_dir=data_path)  # try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets'
-        ds_train = create_split(dataset_builder, batch_size=batch_size, train=True, cache=True, cutmix=cut_mix,shuffle_buffer_size=250000)
-        ds_eval = create_split(dataset_builder, batch_size=batch_size, train=False, cache=True)
+        ds_train = create_split(dataset_builder, batch_size=batch_size, train=True, cache=cache, cutmix=cut_mix,shuffle_buffer_size=shuffle_size)
+        ds_eval = create_split(dataset_builder, batch_size=batch_size, train=False, cache=cache)
 
         self.dl = map(prepare_tf_data, ds_train)
         self.dl = flax.jax_utils.prefetch_to_device(self.dl, 2)
