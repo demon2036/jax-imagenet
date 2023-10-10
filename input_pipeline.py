@@ -421,7 +421,7 @@ def create_split(
     if not train:
         ds = ds.repeat()
 
-    cut_mix = tensorflow_models.vision.augment.MixupAndCutmix(num_classes=1000, prob=0.1, switch_prob=0.5,
+    cut_mix = tensorflow_models.vision.augment.MixupAndCutmix(num_classes=1000, prob=0.2, switch_prob=0.5,
                                                               mixup_alpha=0.8)
 
     def cut_mix_and_mix_up(samples):
