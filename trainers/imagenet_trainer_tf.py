@@ -162,10 +162,8 @@ def train_step(state: MyTrainState, batch):
 
 @partial(jax.pmap, axis_name='batch')
 def train_step_without_bn(state: MyTrainState, batch, key):
-    key, temp, batch = mixup(key, images=batch['images'], labels=batch['labels'], p=0.2)
+    # key, temp, batch = mixup(key, images=batch['images'], labels=batch['labels'], p=0.2)
 
-    print(temp)
-    print(batch)
 
     def loss_fn(params):
         variables = {'params': params, }
