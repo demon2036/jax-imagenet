@@ -19,6 +19,7 @@ from modules.state_utils import *
 NUM_CLASSES = 1000
 
 
+
 def stack_forest(forest):
     """Helper function to stack the leaves of a sequence of pytrees.
 
@@ -162,7 +163,7 @@ def train_step(state: MyTrainState, batch):
 
 @partial(jax.pmap, axis_name='batch')
 def train_step_without_bn(state: MyTrainState, batch, key):
-    # key, temp, batch = mixup(key, images=batch['images'], labels=batch['labels'], p=0.2)
+    key, temp, batch = mixup(key, images=batch['images'], labels=batch['labels'], p=0.2)
 
 
     def loss_fn(params):
