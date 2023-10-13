@@ -8,5 +8,5 @@ Model:
 Optimizer:
   target: optax.adamw
   params:
-    learning_rate: 1.0e-3
+    learning_rate: 4.0e-4
     weight_decay: 0.001
