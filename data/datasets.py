@@ -69,7 +69,8 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
         x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
         x = np.array(x)
         x = A.Resize(image_size, image_size)(image=x)['image']
-        return      {'img': x, 'cls': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64),1000)}
+        return {'img': x,
+                'cls': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64), 1000)}
 
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00200..00950}.tar '
     # urls = 'pipe: cat /media/john/M2/imagenet_train_shards/imagenet_train_shards-{00200..00950}.tar'
