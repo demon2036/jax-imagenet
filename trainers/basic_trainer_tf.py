@@ -15,7 +15,7 @@ def prepare_tf_data(xs):
 
     def _prepare(x):
         # Use _numpy() for zero-copy conversion between TF and NumPy.
-        x = x._numpy()  # pylint: disable=protected-access
+        x = x#._numpy()  # pylint: disable=protected-access
 
         # reshape (host_batch_size, height, width, 3) to
         # (local_devices, device_batch_size, height, width, 3)
