@@ -1,3 +1,4 @@
+import io
 from pathlib import Path
 import cv2
 import einops
@@ -7,10 +8,11 @@ import tqdm
 import webdataset as wds
 import albumentations as A
 from torchvision.datasets import ImageFolder
-from torch.utils.data import DataLoader,Dataset
+from torch.utils.data import DataLoader, Dataset
 import numpy as np
 from torchvision.utils import save_image
 from tqdm import tqdm
+from PIL import Image
 
 image_size = 224
 
@@ -26,7 +28,7 @@ class ImagePreprocessor():
         img = self.resize(image=img)['image']
         # img = self.center_crop(image=img)['image']
         img = self.random_horizontal_flip(image=img)['image']
-        img = self.normalize(image=img,max_pixel_value=1)['image']
+        img = self.normalize(image=img, max_pixel_value=1)['image']
         return img
 
 
@@ -40,6 +42,7 @@ def transfer_data(x):
     return x
 
 
+"""
 def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128, num_workers=8, pin_memory=True,
                           drop_last=True, shuffle_size=10000):
     shards_urls = [str(path) for path in Path(dataset_root).glob('*')]
@@ -56,6 +59,30 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
     #     data, cls = sample
     # print(data.shape, cls)
 
+"""
+
+
+def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128, num_workers=8, pin_memory=True,
+                          drop_last=True, shuffle_size=10000):
+    def test(x):
+        cls = int(x['cls'].decode('utf-8'))
+        x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
+        x = np.array(x)
+        x = A.Resize(image_size, image_size)(image=x)['image']
+        return {'img': x, 'cls': np.array(cls)}
+
+    urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00200..00950}.tar '
+    # urls = 'pipe: cat /media/john/M2/imagenet_train_shards/imagenet_train_shards-{00200..00950}.tar'
+    dataset = wds.WebDataset(
+        urls=urls,
+        shardshuffle=False).mcached().map(test)
+
+    dl = DataLoader(dataset, num_workers=48, prefetch_factor=4, batch_size=1024,
+                    # collate_fn=collect_fn,
+                    persistent_workers=True)
+
+    return dl
+
 
 if __name__ == '__main__':
 
@@ -68,10 +95,10 @@ if __name__ == '__main__':
         # print(x.min(), x.max())
 
         print(x.shape)
-        x=np.array(x)
-        x=torch.Tensor(x)
-        x=einops.rearrange(x,'b h w c->b c h w')
-        save_image(x,'test.png')
+        x = np.array(x)
+        x = torch.Tensor(x)
+        x = einops.rearrange(x, 'b h w c->b c h w')
+        save_image(x, 'test.png')
         break
         # break
 
