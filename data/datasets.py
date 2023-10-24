@@ -78,7 +78,7 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
         urls=urls,
         shardshuffle=False).mcached().map(test)
 
-    dl = DataLoader(dataset, num_workers=24, prefetch_factor=8, batch_size=1024,
+    dl = DataLoader(dataset, num_workers=24, prefetch_factor=8, batch_size=1024,drop_last=False,
                     # collate_fn=collect_fn,
                     persistent_workers=True)
 
