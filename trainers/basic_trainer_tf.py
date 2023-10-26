@@ -8,7 +8,7 @@ import tensorflow_datasets as tfds
 
 from input_pipeline import create_split
 from modules.utils import create_checkpoint_manager
-from data.test import create_input_pipeline
+
 
 def prepare_tf_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
@@ -50,7 +50,7 @@ class Trainer:
         # ds_train = create_split(dataset_builder, batch_size=batch_size, train=True, cache=cache, cutmix=cut_mix,shuffle_buffer_size=shuffle_size)
         # ds_eval = create_split(dataset_builder, batch_size=batch_size, train=False, cache=cache)
 
-
+        from data.test import create_input_pipeline
 
         ds_train = create_input_pipeline(dataset_builder, batch_size=batch_size, )
         #ds_eval = create_input_pipeline(dataset_builder, batch_size=batch_size, )
