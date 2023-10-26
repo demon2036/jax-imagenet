@@ -12,9 +12,9 @@ import os
 from jax_smi import initialise_tracking
 from trainers.imagenet_trainer_tf import ImageNetTrainer
 
-initialise_tracking()
+# initialise_tracking()
 
-os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
+# os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -36,6 +36,12 @@ if __name__ == "__main__":
         trainer = ImageNetTrainer(**train_config)
         trainer.create_state(state_configs=model_config)
 
+    for epoch in range(trainer.total_epoch):
+        for _ in range(trainer.steps_per_epoch):
+            batch = next(trainer.dl)
+            trainer.pbar.update(1)
+
+
     trainer.load()
     # trainer.state = flax.jax_utils.replicate(trainer.state)
     # trainer.eval()
@@ -44,10 +50,7 @@ if __name__ == "__main__":
     # trainer.state = flax.jax_utils.replicate(trainer.state)
     # trainer.eval()
 
-    for epoch in range(trainer.total_epoch):
-        for _ in range(trainer.steps_per_epoch):
-            batch = next(trainer.dl)
-            trainer.pbar.update(1)
+
 
 
     trainer.train()
