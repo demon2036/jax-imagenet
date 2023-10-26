@@ -38,8 +38,8 @@ import tensorflow as tf
 def normalize_image(image):
     image = np.asarray(image, dtype='float32')
     # print(image)
-    image -= jnp.array(MEAN_RGB, dtype=image.dtype).reshape(1, 1, 3)
-    image /= jnp.array(STDDEV_RGB, dtype=image.dtype).reshape(1, 1, 3)
+    image -= np.array(MEAN_RGB, dtype=image.dtype).reshape(1, 1, 3)
+    image /= np.array(STDDEV_RGB, dtype=image.dtype).reshape(1, 1, 3)
     # image -= tf.constant(MEAN_RGB, shape=[1, 1, 3], dtype=image.dtype)
     # image /= tf.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=image.dtype)
     return image
