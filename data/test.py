@@ -1,6 +1,7 @@
 import io
 import os
-
+# import tensorflow as tf
+import einops
 import numpy
 import numpy as np
 import torch
@@ -32,15 +33,20 @@ def test(x):
 
 
 def normalize_image(image):
-    image -= torch.constant(MEAN_RGB, shape=[1, 1, 3], dtype=image.dtype)
-    image /= torch.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=image.dtype)
+    image = np.asarray(image)
+    print(image)
+    image -= tf.constant(MEAN_RGB, shape=[1, 1, 3], dtype=image.dtype)
+    image /= tf.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=image.dtype)
+
+    print(image)
     return image
 
 
 def prepare_tf_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
     local_device_count = jax.local_device_count()
-    xs['images'] = normalize_image(xs['images'])
+    # xs['images'] = normalize_image(xs['images'])
+    xs['images'] = xs['images'] / 255.0
 
     # print(xs['images'].shape)
 
@@ -62,12 +68,7 @@ def create_input_pipeline(*args, **kwargs):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
-    # urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
-
-    def normalize_image(image):
-        image -= tf.constant(MEAN_RGB, shape=[1, 1, 3], dtype=image.dtype)
-        image /= tf.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=image.dtype)
-        return image
+    urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
 
     dataset = wds.WebDataset(
         urls=urls,
@@ -89,3 +90,13 @@ if __name__ == "__main__":
     print(data['images'], )
     # print(jnp.argmax(data['labels'],axis=-1))
     print(data['labels'].shape)
+
+    images = np.asarray(data['images'])
+    images = torch.Tensor(images)
+
+    from torchvision.utils import save_image
+
+    images = einops.rearrange(images, 'n b h w c->(n b ) c h w  ')
+    print(images.shape)
+
+    save_image(images, 'test.png')
