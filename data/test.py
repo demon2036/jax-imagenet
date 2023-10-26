@@ -38,9 +38,10 @@ import tensorflow as tf
 def normalize_image(image):
     image = np.asarray(image, dtype='float32')
     # print(image)
-
-    image -= tf.constant(MEAN_RGB, shape=[1, 1, 3], dtype=image.dtype)
-    image /= tf.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=image.dtype)
+    image -= jnp.array(MEAN_RGB, dtype=image.dtype).reshape(1, 1, 3)
+    image /= jnp.array(STDDEV_RGB, dtype=image.dtype).reshape(1, 1, 3)
+    # image -= tf.constant(MEAN_RGB, shape=[1, 1, 3], dtype=image.dtype)
+    # image /= tf.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=image.dtype)
     return image
 
 
@@ -71,7 +72,7 @@ def create_input_pipeline(*args, **kwargs):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
-    urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
+    #urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
 
     dataset = wds.WebDataset(
         urls=urls,
