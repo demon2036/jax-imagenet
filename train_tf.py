@@ -20,11 +20,7 @@ from trainers.imagenet_trainer_tf import ImageNetTrainer
 # os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
 
 
-
 if __name__ == "__main__":
-
-
-
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default=None)
@@ -45,9 +41,7 @@ if __name__ == "__main__":
         trainer = ImageNetTrainer(**train_config)
         trainer.create_state(state_configs=model_config)
 
-
     # dl = map(prepare_tf_data,dl, )
-
 
     trainer.load()
     # trainer.state = flax.jax_utils.replicate(trainer.state)
@@ -56,9 +50,6 @@ if __name__ == "__main__":
     # trainer.state = switch_to_deploy(trainer.state, config)
     # trainer.state = flax.jax_utils.replicate(trainer.state)
     # trainer.eval()
-
-
-
 
     trainer.train()
 

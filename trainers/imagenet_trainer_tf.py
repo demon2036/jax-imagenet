@@ -313,7 +313,6 @@ class ImageNetTrainer(Trainer):
         for epoch in range(self.total_epoch):
             for _ in range(self.steps_per_epoch):
                 batch = next(self.dl)
-                """
 
                 self.rng, train_key = jax.random.split(self.rng)
 
@@ -337,7 +336,7 @@ class ImageNetTrainer(Trainer):
                     finished_steps = flax.jax_utils.replicate(jnp.array([self.finished_steps]))
                     self.state = update_ema(self.state, finished_steps)
                
-
+            """
             print()
             if (epoch + 1) % 10 == 0:
                 if has_bn:
@@ -346,7 +345,7 @@ class ImageNetTrainer(Trainer):
                 self.state = flax.jax_utils.unreplicate(self.state)
                 self.save()
                 self.state = flax.jax_utils.replicate(self.state)
-             """
+           """
 
 
 if __name__ == "__main__":
