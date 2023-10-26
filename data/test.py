@@ -24,7 +24,7 @@ def test(x):
     x = np.array(x)
 
     x = A.Resize(224, 224)(image=x)['image']
-    x = x / 255.0
+    # x = x / 255.0
 
 
 
@@ -34,6 +34,7 @@ def test(x):
 def prepare_tf_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
     local_device_count = jax.local_device_count()
+    xs['images']=xs['images'] / 255.0
 
     # print(xs['images'].shape)
 
