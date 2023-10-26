@@ -16,7 +16,7 @@ import jax
 import jax.numpy as jnp
 
 
-# .batched(1024)
+from data.datasets import create_input_pipeline
 
 
 def collect_fn(x):
@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
     # urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar'
 
-    dl = get_dl()
+    dl = create_input_pipeline()
     # dl = map(prepare_tf_data,dl, )
 
     for _ in range(100):
