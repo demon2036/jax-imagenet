@@ -5,7 +5,7 @@ from tqdm import tqdm
 # from data.datasets import create_input_pipeline
 import jax
 import tensorflow_datasets as tfds
-from data.test import create_input_pipeline
+from data.test import create_input_pipeline,prepare_torch_data
 from input_pipeline import create_split
 from modules.utils import create_checkpoint_manager
 
@@ -53,7 +53,7 @@ class Trainer:
         ds_train = create_input_pipeline(dataset_builder, batch_size=batch_size, )
         # ds_eval = create_input_pipeline(dataset_builder, batch_size=batch_size, )
 
-        self.dl = map(prepare_tf_data, ds_train)
+        self.dl = map(prepare_torch_data, ds_train)
         self.dl = flax.jax_utils.prefetch_to_device(self.dl, 2)
         self.dl_eval = map(prepare_tf_data, ds_eval)
 
