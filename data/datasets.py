@@ -82,7 +82,7 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
 
     dataset = wds.WebDataset(
         urls=urls,
-        shardshuffle=False).mcached().map(test).batched(1024, collation_fn=default_collate).map(temp)
+        shardshuffle=False).mcached().map(test).batched(batch_size, collation_fn=default_collate).map(temp)
 
     dataloader = DataLoader(dataset, num_workers=64, prefetch_factor=4, batch_size=None,  # drop_last=True,
                             persistent_workers=True)
