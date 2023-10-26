@@ -14,7 +14,7 @@ from PIL import Image
 import albumentations as A
 import jax
 import jax.numpy as jnp
-from temp import get_dl
+from temp import get_dl, prepare_tf_data
 
 
 def collect_fn(x):
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     # urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar'
 
     dl = get_dl()
-    # dl = map(prepare_tf_data,dl, )
+    dl = map(prepare_tf_data,dl, )
 
     for _ in range(100):
         for data in tqdm(dl):
