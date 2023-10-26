@@ -31,15 +31,16 @@ def test(x):
     return {'images': x, 'labels': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64),
                                                                1000).float().reshape(-1)}
 
+
 import tensorflow as tf
+
+
 def normalize_image(image):
-    image = np.asarray(image,dtype='float32')
+    image = np.asarray(image, dtype='float32')
     # print(image)
 
     image -= tf.constant(MEAN_RGB, shape=[1, 1, 3], dtype=image.dtype)
     image /= tf.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=image.dtype)
-
-    print(image)
     return image
 
 
@@ -47,6 +48,7 @@ def prepare_torch_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
     local_device_count = jax.local_device_count()
     xs['images'] = normalize_image(xs['images'])
+
     # xs['images'] = xs['images'] / 255.0
 
     # print(xs['images'].shape)
