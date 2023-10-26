@@ -3,7 +3,9 @@ from functools import partial
 
 import flax.jax_utils
 import jax.random
+from tqdm import tqdm
 
+from data.datasets import create_input_pipeline
 from experimental.test_rep import switch_to_deploy
 from modules.state_utils import create_obj_by_config, create_state_by_config, create_state_by_config2, \
     create_learning_rate_fn
@@ -15,6 +17,8 @@ from trainers.imagenet_trainer_tf import ImageNetTrainer
 # initialise_tracking()
 
 # os.environ['XLA_FLAGS'] = '--xla_gpu_force_compilation_parallelism=1'
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -35,6 +39,16 @@ if __name__ == "__main__":
         print()
         trainer = ImageNetTrainer(**train_config)
         trainer.create_state(state_configs=model_config)
+
+    dl = create_input_pipeline()
+    # dl = map(prepare_tf_data,dl, )
+
+    for _ in range(100):
+        for data in tqdm(dl):
+            # print(data)
+            pass
+
+
 
     for epoch in range(trainer.total_epoch):
         for data in trainer.dl:
