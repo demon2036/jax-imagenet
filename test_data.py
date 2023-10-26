@@ -14,7 +14,7 @@ from PIL import Image
 import albumentations as A
 import jax
 import jax.numpy as jnp
-# from temp import get_dl
+from temp import get_dl
 
 
 def collect_fn(x):
