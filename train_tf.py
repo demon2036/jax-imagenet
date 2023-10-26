@@ -44,6 +44,12 @@ if __name__ == "__main__":
     # trainer.state = flax.jax_utils.replicate(trainer.state)
     # trainer.eval()
 
+    for epoch in range(trainer.total_epoch):
+        for _ in range(trainer.steps_per_epoch):
+            batch = next(trainer.dl)
+            trainer.pbar.update(1)
+
+
     trainer.train()
 
     # trainer.test()
