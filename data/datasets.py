@@ -94,26 +94,3 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=102
         for _ in dataloader:
             yield _
 
-if __name__ == '__main__':
-    """"""
-    # dl = create_input_pipeline(dataset_root='/root/fused_bucket/data/imagenet_train_shards', batch_size=32)
-    dl = create_input_pipeline(dataset_root='/home/john/data/imagenet_train_shards', batch_size=32)
-
-    for data in tqdm(dl, total=10000):
-        x, y = data
-
-        # print(x.min(), x.max())
-
-        print(x.shape)
-        x = np.array(x)
-        x = torch.Tensor(x)
-        x = einops.rearrange(x, 'b h w c->b c h w')
-        save_image(x, 'test.png')
-        break
-        # break
-
-        # print(x.shape, y.shape)
-
-    # create_shards()
-
-# dataset=wds.WebDataset(shardshuffle=True).shuffle(1000).decode('rgb')

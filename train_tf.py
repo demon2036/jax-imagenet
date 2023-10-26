@@ -6,7 +6,7 @@ import jax.random
 from tqdm import tqdm
 
 # from data.datasets import create_input_pipeline
-from temp import get_dl as create_input_pipeline
+from data.test import create_input_pipeline
 from experimental.test_rep import switch_to_deploy
 from modules.state_utils import create_obj_by_config, create_state_by_config, create_state_by_config2, \
     create_learning_rate_fn
