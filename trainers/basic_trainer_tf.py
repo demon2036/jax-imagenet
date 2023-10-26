@@ -13,11 +13,11 @@ from modules.utils import create_checkpoint_manager
 def prepare_tf_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
     local_device_count = jax.local_device_count()
-    xs={'images': xs['img'], 'labels': xs['cls']}
+
     def _prepare(x):
         # Use _numpy() for zero-copy conversion between TF and NumPy.
         # x = {'img': x['img'], 'cls': x['cls']}
-        x=numpy.asarray(x)
+        x = numpy.asarray(x)
         # x = x._numpy()  # pylint: disable=protected-access
 
         # reshape (host_batch_size, height, width, 3) to

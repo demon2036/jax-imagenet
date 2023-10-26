@@ -8,7 +8,7 @@ import tqdm
 import webdataset as wds
 import albumentations as A
 from torchvision.datasets import ImageFolder
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, default_collate
 import numpy as np
 from torchvision.utils import save_image
 from tqdm import tqdm
@@ -64,25 +64,32 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
 
 def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128, num_workers=8, pin_memory=True,
                           drop_last=True, shuffle_size=10000):
+    urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
+    urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
+
+    # urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
     def test(x):
         cls = int(x['cls'].decode('utf-8'))
         x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
         x = np.array(x)
-        x = A.Resize(image_size, image_size)(image=x)['image']
-        return {'img': x,
-                'cls': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64), 1000)}
+        x = A.Resize(224, 224)(image=x)['image']
+        return {'images': x,
+                'labels': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64), 1000)}
 
-    urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00200..00950}.tar '
-    # urls = 'pipe: cat /media/john/M2/imagenet_train_shards/imagenet_train_shards-{00200..00950}.tar'
+    def temp(x):
+        del x['__key__']
+        return x
+
     dataset = wds.WebDataset(
         urls=urls,
-        shardshuffle=False).mcached().map(test)
+        shardshuffle=False).mcached().map(test).batched(1024, collation_fn=default_collate).map(temp)
 
-    dl = DataLoader(dataset, num_workers=24, prefetch_factor=16, batch_size=1024,drop_last=True,
-                    # collate_fn=collect_fn,
-                    persistent_workers=True)
+    dataloader = DataLoader(dataset, num_workers=64, prefetch_factor=4, batch_size=None,  # drop_last=True,
+                            persistent_workers=True)
 
-    return dl
+    while True:
+        for _ in dataloader:
+            yield _
 
 
 if __name__ == '__main__':
