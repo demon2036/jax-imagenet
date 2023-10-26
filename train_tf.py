@@ -23,11 +23,7 @@ from trainers.imagenet_trainer_tf import ImageNetTrainer
 
 if __name__ == "__main__":
 
-    dl = create_input_pipeline()
-    for _ in range(100):
-        for data in tqdm(dl):
-            # print(data)
-            pass
+
 
 
     parser = argparse.ArgumentParser()

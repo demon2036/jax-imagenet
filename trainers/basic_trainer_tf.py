@@ -50,7 +50,7 @@ class Trainer:
         # ds_train = create_split(dataset_builder, batch_size=batch_size, train=True, cache=cache, cutmix=cut_mix,shuffle_buffer_size=shuffle_size)
         # ds_eval = create_split(dataset_builder, batch_size=batch_size, train=False, cache=cache)
 
-        from data.datasets import create_input_pipeline
+        from data.test import create_input_pipeline
 
         ds_train = create_input_pipeline(dataset_builder, batch_size=batch_size, )
         #ds_eval = create_input_pipeline(dataset_builder, batch_size=batch_size, )
