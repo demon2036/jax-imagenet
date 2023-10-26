@@ -15,6 +15,9 @@ import albumentations as A
 import jax
 import jax.numpy as jnp
 
+MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
+STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
+
 
 def test(x):
     cls = int(x['cls'].decode('utf-8'))
@@ -28,12 +31,16 @@ def test(x):
                                                                1000).float().reshape(-1)}
 
 
+def normalize_image(image):
+    image -= torch.constant(MEAN_RGB, shape=[1, 1, 3], dtype=image.dtype)
+    image /= torch.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=image.dtype)
+    return image
+
+
 def prepare_tf_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
     local_device_count = jax.local_device_count()
-    xs['images'] = xs['images'] / 255.0
-
-    print(xs['labels'].shape)
+    xs['images'] = normalize_image(xs['images'])
 
     # print(xs['images'].shape)
 
@@ -55,13 +62,12 @@ def create_input_pipeline(*args, **kwargs):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
-    #urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
+    # urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
 
-    def temp(x):
-        del x['__key__']
-
-        print(x)
-        return x
+    def normalize_image(image):
+        image -= tf.constant(MEAN_RGB, shape=[1, 1, 3], dtype=image.dtype)
+        image /= tf.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=image.dtype)
+        return image
 
     dataset = wds.WebDataset(
         urls=urls,
