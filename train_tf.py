@@ -37,8 +37,9 @@ if __name__ == "__main__":
         trainer.create_state(state_configs=model_config)
 
     for epoch in range(trainer.total_epoch):
-        for _ in range(trainer.steps_per_epoch):
-            batch = next(trainer.dl)
+        for data in trainer.dl:
+        # for _ in range(trainer.steps_per_epoch):
+        #     batch = next(trainer.dl)
             trainer.pbar.update(1)
 
 
