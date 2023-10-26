@@ -21,6 +21,14 @@ from trainers.imagenet_trainer_tf import ImageNetTrainer
 
 
 if __name__ == "__main__":
+
+    dl = create_input_pipeline()
+    for _ in range(100):
+        for data in tqdm(dl):
+            # print(data)
+            pass
+
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-cp', '--config_path', default=None)
     parser.add_argument('-mp', '--model_config_path', default='configs/model/test.yaml')
@@ -40,13 +48,10 @@ if __name__ == "__main__":
         trainer = ImageNetTrainer(**train_config)
         trainer.create_state(state_configs=model_config)
 
-    dl = create_input_pipeline()
+
     # dl = map(prepare_tf_data,dl, )
 
-    for _ in range(100):
-        for data in tqdm(dl):
-            # print(data)
-            pass
+
 
 
 
