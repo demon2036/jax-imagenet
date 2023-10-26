@@ -32,7 +32,7 @@ def test(x):
                                                                1000).float().reshape(-1)}
 
 
-import tensorflow as tf
+
 
 
 def normalize_image(image):
