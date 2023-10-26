@@ -73,6 +73,7 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
         x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
         x = np.array(x)
         x = A.Resize(224, 224)(image=x)['image']
+        x=x/255
         return {'images': x,
                 'labels': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64), 1000)}
 
