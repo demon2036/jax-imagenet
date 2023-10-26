@@ -46,34 +46,15 @@ class MyDataSet(Dataset):
 
 
 
-def test(x):
+# def test(x):
+#
+#     cls = int(x['cls'].decode('utf-8'))
+#     x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
+#     x = np.array(x)
+#     x = A.Resize(224, 224)(image=x)['image']
+#
+#     return {'images': x, 'labels': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64), 1000)}
 
-    cls = int(x['cls'].decode('utf-8'))
-    x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
-    x = np.array(x)
-    x = A.Resize(224, 224)(image=x)['image']
-
-    return {'images': x, 'labels': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64), 1000)}
-
-
-def prepare_tf_data(xs):
-    """Convert a input batch from tf Tensors to numpy arrays."""
-    local_device_count = jax.local_device_count()
-
-    # print(xs['images'].shape)
-
-    def _prepare(x):
-        # Use _numpy() for zero-copy conversion between TF and NumPy.
-        # x = {'img': x['img'], 'cls': x['cls']}
-        x = numpy.asarray(x)
-
-        # x = x._numpy()  # pylint: disable=protected-access
-
-        # reshape (host_batch_size, height, width, 3) to
-        # (local_devices, device_batch_size, height, width, 3)
-        return x.reshape((local_device_count, -1) + x.shape[1:])
-
-    return jax.tree_util.tree_map(_prepare, xs)
 
 
 # def get_dl():
