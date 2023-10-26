@@ -62,7 +62,7 @@ def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128
 """
 
 
-def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=128, num_workers=8, pin_memory=True,
+def create_input_pipeline(dataset_root='./imagenet_train_shards', batch_size=1024, num_workers=8, pin_memory=True,
                           drop_last=True, shuffle_size=10000):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
