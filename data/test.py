@@ -67,7 +67,7 @@ def create_input_pipeline(*args, **kwargs):
         urls=urls,
         shardshuffle=False).mcached().map(test)  # .batched(1024,collation_fn=default_collate).map(temp)
 
-    dataloader = DataLoader(dataset, num_workers=96, prefetch_factor=4, batch_size=1024, drop_last=True,
+    dataloader = DataLoader(dataset, num_workers=64, prefetch_factor=4, batch_size=1024, drop_last=True,
                             persistent_workers=True)
 
     while True:
