@@ -10,7 +10,7 @@ from input_pipeline import create_split
 from modules.utils import create_checkpoint_manager
 
 
-tfds.builder()
+
 
 def prepare_tf_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
