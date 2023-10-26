@@ -21,7 +21,7 @@ STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 
 
 mean=np.array(MEAN_RGB, ).reshape(1, 1, 3)
-std= np.array(STDDEV_RGB, dtype=image.dtype).reshape(1, 1, 3)
+std= np.array(STDDEV_RGB).reshape(1, 1, 3)
 
 
 def test(x):
