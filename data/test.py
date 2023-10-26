@@ -68,4 +68,5 @@ def create_input_pipeline(*args,**kwargs):
 
     while True:
         for _ in dataloader:
+            del _['__key__']
             yield _
