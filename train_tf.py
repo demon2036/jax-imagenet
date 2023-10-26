@@ -49,16 +49,6 @@ if __name__ == "__main__":
     # dl = map(prepare_tf_data,dl, )
 
 
-
-
-
-    for epoch in range(trainer.total_epoch):
-        for data in trainer.dl:
-        # for _ in range(trainer.steps_per_epoch):
-        #     batch = next(trainer.dl)
-            trainer.pbar.update(1)
-
-
     trainer.load()
     # trainer.state = flax.jax_utils.replicate(trainer.state)
     # trainer.eval()
