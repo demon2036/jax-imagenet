@@ -22,8 +22,9 @@ def test(x):
     cls = int(x['cls'].decode('utf-8'))
     x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
     x = np.array(x)
+    x = x / 255.0
     x = A.Resize(224, 224)(image=x)['image']
-    x=x/255
+
 
     return {'images': x, 'labels': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64), 1000).float()}
 
