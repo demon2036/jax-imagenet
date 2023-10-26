@@ -336,16 +336,16 @@ class ImageNetTrainer(Trainer):
                     finished_steps = flax.jax_utils.replicate(jnp.array([self.finished_steps]))
                     self.state = update_ema(self.state, finished_steps)
                
-            """
+            """ """
             print()
-            if (epoch + 1) % 10 == 0:
+            if (epoch + 1) % 1 == 0:
                 if has_bn:
                     self.state = sync_batch_stats(self.state)
                 self.eval()
                 self.state = flax.jax_utils.unreplicate(self.state)
                 self.save()
                 self.state = flax.jax_utils.replicate(self.state)
-           """
+
 
 
 if __name__ == "__main__":
