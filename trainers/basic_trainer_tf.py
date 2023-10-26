@@ -50,14 +50,12 @@ class Trainer:
         # ds_train = create_split(dataset_builder, batch_size=batch_size, train=True, cache=cache, cutmix=cut_mix,shuffle_buffer_size=shuffle_size)
         # ds_eval = create_split(dataset_builder, batch_size=batch_size, train=False, cache=cache)
 
-
-
         ds_train = create_input_pipeline(dataset_builder, batch_size=batch_size, )
-        #ds_eval = create_input_pipeline(dataset_builder, batch_size=batch_size, )
+        # ds_eval = create_input_pipeline(dataset_builder, batch_size=batch_size, )
 
         self.dl = map(prepare_tf_data, ds_train)
         self.dl = flax.jax_utils.prefetch_to_device(self.dl, 2)
-        #self.dl_eval = map(prepare_tf_data, ds_eval)
+        # self.dl_eval = map(prepare_tf_data, ds_eval)
 
         num_validation_examples = dataset_builder.info.splits[
             'validation'

@@ -16,9 +16,7 @@ import jax
 import jax.numpy as jnp
 
 
-
 def test(x):
-
     cls = int(x['cls'].decode('utf-8'))
     x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
     x = np.array(x)
@@ -26,15 +24,16 @@ def test(x):
     x = A.Resize(224, 224)(image=x)['image']
     # x = x / 255.0
 
-
-
-    return {'images': x, 'labels': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64), 1000).float()}
+    return {'images': x, 'labels': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64),
+                                                               1000).float().reshape(-1)}
 
 
 def prepare_tf_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
     local_device_count = jax.local_device_count()
-    xs['images']=xs['images'] / 255.0
+    xs['images'] = xs['images'] / 255.0
+
+    print(xs['labels'].shape)
 
     # print(xs['images'].shape)
 
@@ -52,11 +51,11 @@ def prepare_tf_data(xs):
     return jax.tree_util.tree_map(_prepare, xs)
 
 
-def create_input_pipeline(*args,**kwargs):
+def create_input_pipeline(*args, **kwargs):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
-    # urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
+    urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
 
     def temp(x):
         del x['__key__']
@@ -64,12 +63,11 @@ def create_input_pipeline(*args,**kwargs):
         print(x)
         return x
 
-
     dataset = wds.WebDataset(
         urls=urls,
-        shardshuffle=False).mcached().map(test)#.batched(1024,collation_fn=default_collate).map(temp)
+        shardshuffle=False).mcached().map(test)  # .batched(1024,collation_fn=default_collate).map(temp)
 
-    dataloader = DataLoader(dataset, num_workers=64, prefetch_factor=4, batch_size=1024,  drop_last=True,
+    dataloader = DataLoader(dataset, num_workers=64, prefetch_factor=4, batch_size=1024, drop_last=True,
                             persistent_workers=True)
 
     while True:
@@ -78,10 +76,10 @@ def create_input_pipeline(*args,**kwargs):
             yield _
 
 
-
-if __name__=="__main__":
-    dl=create_input_pipeline()
-
-    data=next(dl)
-    print(data['images'],)
-    print(data['labels'])
+if __name__ == "__main__":
+    dl = create_input_pipeline()
+    dl = map(prepare_tf_data, dl)
+    data = next(dl)
+    print(data['images'], )
+    # print(jnp.argmax(data['labels'],axis=-1))
+    print(data['labels'].shape)
