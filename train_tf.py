@@ -43,10 +43,10 @@ if __name__ == "__main__":
 
     # dl = map(prepare_tf_data,dl, )
 
-    for epoch in range(trainer.total_epoch):
-        for _ in range(trainer.steps_per_epoch):
-            batch = next(trainer.dl)
-            print(batch['labels'].dtype)
+    # for epoch in range(trainer.total_epoch):
+    #     for _ in range(trainer.steps_per_epoch):
+    #         batch = next(trainer.dl)
+    #         print(batch['labels'].dtype)
 
 
     trainer.load()
