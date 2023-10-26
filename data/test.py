@@ -24,7 +24,7 @@ def test(x):
     x = np.array(x)
     x = A.Resize(224, 224)(image=x)['image']
 
-    return {'images': x, 'labels': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64), 1000)}
+    return {'images': x, 'labels': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64), 1000).float()}
 
 
 def prepare_tf_data(xs):
