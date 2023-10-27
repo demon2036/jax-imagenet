@@ -60,7 +60,7 @@ def prepare_torch_data(xs):
     return jax.tree_util.tree_map(_prepare, xs)
 
 
-def get_dl(*args,**kwargs):
+def create_input_pipeline(*args,**kwargs):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
