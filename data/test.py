@@ -41,7 +41,8 @@ def test(x):
 
     x = x['jpg']
 
-    # x = np.array(x)
+    x = np.asarray(x)
+
     # # print(x)
     x = A.HorizontalFlip()(image=x)['image']
     x = A.Resize(224, 224)(image=x)['image']
@@ -84,7 +85,7 @@ def create_input_pipeline(*args, **kwargs):
 
     dataset = wds.WebDataset(
         urls=urls,
-        shardshuffle=False).mcached().decode('rgb').map(
+        shardshuffle=False).mcached().decode('pil').map(
         test)  # .batched(1024,collation_fn=default_collate).map(temp)
 
     dataloader = DataLoader(dataset, num_workers=48, prefetch_factor=2, batch_size=1024, drop_last=True,
