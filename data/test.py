@@ -50,7 +50,7 @@ def normalize(images):
 def prepare_torch_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
     local_device_count = jax.local_device_count()
-    xs['images'] = normalize(xs['images'])
+
 
     def _prepare(x):
         # Use _numpy() for zero-copy conversion between TF and NumPy.
@@ -86,9 +86,10 @@ def create_input_pipeline(*args, **kwargs):
                             persistent_workers=True)
 
     while True:
-        for _ in dataloader:
-            del _['__key__']
-            yield _
+        for xs in dataloader:
+            del xs['__key__']
+            xs['images'] = normalize(xs['images'])
+            yield xs
 
 
 if __name__ == "__main__":
