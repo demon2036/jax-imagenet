@@ -70,7 +70,7 @@ def prepare_torch_data(xs):
 
     xs = jax.tree_util.tree_map(_prepare, xs)
 
-    xs['images'] = pmap_normal(xs['images'], mean, std)
+    #xs['images'] = pmap_normal(xs['images'], mean, std)
 
     return xs
 
