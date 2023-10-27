@@ -32,7 +32,7 @@ def test(x):
     x = np.array(x)
     x = A.HorizontalFlip()(image=x)['image']
     x = A.Resize(224, 224)(image=x)['image']
-
+    x=normalize(x)
     # x = x / 255.0
 
     return {'images': x, 'labels': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64),
@@ -61,7 +61,7 @@ def prepare_torch_data(xs):
 
     xs = jax.tree_util.tree_map(_prepare, xs)
 
-    xs['images'] = jax.pmap(normalize)(xs['images'])
+    # xs['images'] = jax.pmap(normalize)(xs['images'])
 
     return xs
 
