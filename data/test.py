@@ -41,7 +41,7 @@ def test(x):
 
     x = x['jpg']
 
-    x = np.array(x)
+    # x = np.array(x)
     # # print(x)
     x = A.HorizontalFlip()(image=x)['image']
     x = A.Resize(224, 224)(image=x)['image']
@@ -49,7 +49,7 @@ def test(x):
     # x = x / 255.0
 
     return {'image': x, 'label': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64),
-                                                               1000).float().reshape(-1)}
+                                                             1000).float().reshape(-1)}
 
 
 def normalize(images):
@@ -67,7 +67,6 @@ def prepare_torch_data(xs):
     def _prepare(x):
         # Use _numpy() for zero-copy conversion between TF and NumPy.
         x = numpy.asarray(x)
-
         return x.reshape((local_device_count, -1) + x.shape[1:])
 
     xs = jax.tree_util.tree_map(_prepare, xs)
@@ -81,14 +80,14 @@ def create_input_pipeline(*args, **kwargs):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
-    #urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
+    urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
 
     dataset = wds.WebDataset(
         urls=urls,
-        shardshuffle=False).mcached().decode('torchrgb').map(
+        shardshuffle=False).mcached().decode('rgb').map(
         test)  # .batched(1024,collation_fn=default_collate).map(temp)
 
-    dataloader = DataLoader(dataset, num_workers=48, prefetch_factor=4, batch_size=1024, drop_last=True,
+    dataloader = DataLoader(dataset, num_workers=48, prefetch_factor=2, batch_size=1024, drop_last=True,
                             persistent_workers=True)
 
     while True:
@@ -101,11 +100,11 @@ if __name__ == "__main__":
     dl = create_input_pipeline()
     dl = map(prepare_torch_data, dl)
     data = next(dl)
-    print(data['images'], )
+    print(data['image'], )
 
-    print(data['labels'].shape)
+    print(data['label'].shape)
 
-    images = np.asarray(data['images'])
+    images = np.asarray(data['image'])
     images = torch.Tensor(images)
 
     from torchvision.utils import save_image
