@@ -19,12 +19,12 @@ import jax.numpy as jnp
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 
-mean = jnp.array(MEAN_RGB).reshape(1, 1, 3)
-std = jnp.array(STDDEV_RGB).reshape(1, 1, 3)
+mean = jnp.array(MEAN_RGB,dtype=np.float32).reshape(1, 1, 3)
+std = jnp.array(STDDEV_RGB,dtype=np.float32).reshape(1, 1, 3)
 
 
-mean = np.array(MEAN_RGB,dtype=np.float32).reshape(1, 1, 3)
-std = np.array(STDDEV_RGB,dtype=np.float32).reshape(1, 1, 3)
+# mean = np.array(MEAN_RGB,dtype=np.float32).reshape(1, 1, 3)
+# std = np.array(STDDEV_RGB,dtype=np.float32).reshape(1, 1, 3)
 # mean = torch.Tensor(MEAN_RGB).reshape(1, 1, 3)
 # std = torch.Tensor(STDDEV_RGB).reshape(1, 1, 3)
 
@@ -35,8 +35,6 @@ def test(x):
     x = np.array(x)
     x = A.HorizontalFlip()(image=x)['image']
     x = A.Resize(224, 224)(image=x)['image']
-    x=np.asarray(x,dtype=np.float32)
-    x=normalize(x)
     # x = x / 255.0
 
     return {'images': x, 'labels': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64),
@@ -59,13 +57,13 @@ def prepare_torch_data(xs):
     def _prepare(x):
         # Use _numpy() for zero-copy conversion between TF and NumPy.
         # x = {'img': x['img'], 'cls': x['cls']}
-        x = numpy.asarray(x)
+        x = numpy.asarray(x,dtype=np.float32)
 
         return x.reshape((local_device_count, -1) + x.shape[1:])
 
     xs = jax.tree_util.tree_map(_prepare, xs)
 
-    # xs['images'] = jax.pmap(normalize)(xs['images'])
+    xs['images'] = jax.pmap(normalize)(xs['images'])
 
     return xs
 
@@ -81,7 +79,7 @@ def create_input_pipeline(*args, **kwargs):
         urls=urls,
         shardshuffle=False).mcached().map(test)  # .batched(1024,collation_fn=default_collate).map(temp)
 
-    dataloader = DataLoader(dataset, num_workers=96, prefetch_factor=2, batch_size=1024, drop_last=True,
+    dataloader = DataLoader(dataset, num_workers=24, prefetch_factor=4, batch_size=1024, drop_last=True,
                             persistent_workers=True)
 
     while True:
