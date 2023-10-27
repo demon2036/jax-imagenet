@@ -70,25 +70,19 @@ def create_input_pipeline(*args, **kwargs):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
-    urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
+    # urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
 
-    def temp(x):
-        del x['__key__']
-
-        print(x)
-        return x
 
     dataset = wds.WebDataset(
         urls=urls,
         shardshuffle=False).mcached().map(test)  # .batched(1024,collation_fn=default_collate).map(temp)
 
-    dataloader = DataLoader(dataset, num_workers=64, prefetch_factor=4, batch_size=1024, drop_last=True,
+    dataloader = DataLoader(dataset, num_workers=48, prefetch_factor=8, batch_size=1024, drop_last=True,
                             persistent_workers=True)
 
     while True:
         for xs in dataloader:
             del xs['__key__']
-            xs['images'] = normalize(xs['images'])
             yield xs
 
 
