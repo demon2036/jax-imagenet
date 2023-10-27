@@ -2,6 +2,7 @@ import io
 import os
 
 import einops
+import flax.jax_utils
 import numpy
 import numpy as np
 import torch
@@ -18,6 +19,8 @@ import jax.numpy as jnp
 
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
+mean = flax.jax_utils.replicate(jnp.array(MEAN_RGB, ).reshape(1, 1, 3))
+std = flax.jax_utils.replicate(jnp.array(STDDEV_RGB).reshape(1, 1, 3))
 
 
 def test(x):
@@ -33,7 +36,7 @@ def test(x):
                                                                1000).float().reshape(-1)}
 
 
-def normalize_image(image):
+def normalize_image(image, mean, std):
     # print(image)
     image -= mean
     image /= std
@@ -45,6 +48,8 @@ def normalize_image(image):
 def prepare_torch_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
     local_device_count = jax.local_device_count()
+
+    pmap_normal = jax.pmap(normalize_image)
 
     # xs['images'] = normalize_image(xs['images'])
 
@@ -63,7 +68,11 @@ def prepare_torch_data(xs):
         # (local_devices, device_batch_size, height, width, 3)
         return x.reshape((local_device_count, -1) + x.shape[1:])
 
-    return jax.tree_util.tree_map(_prepare, xs)
+    xs = jax.tree_util.tree_map(_prepare, xs)
+
+    xs['images'] = pmap_normal(xs['images'], mean, std)
+
+    return xs
 
 
 def create_input_pipeline(*args, **kwargs):
@@ -71,9 +80,6 @@ def create_input_pipeline(*args, **kwargs):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
     urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
-
-    mean = torch.Tensor(MEAN_RGB, ).reshape(1, 1, 3)
-    std = torch.Tensor(STDDEV_RGB).reshape(1, 1, 3)
 
     dataset = wds.WebDataset(
         urls=urls,
@@ -86,10 +92,6 @@ def create_input_pipeline(*args, **kwargs):
         for _ in dataloader:
             # while True:
             #     pass
-
-            _['images'] -= mean
-            _['images'] /= std
-
             del _['__key__']
             yield _
 
