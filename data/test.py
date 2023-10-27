@@ -2,7 +2,6 @@ import io
 import os
 
 import einops
-import flax.jax_utils
 import numpy
 import numpy as np
 import torch
@@ -19,8 +18,9 @@ import jax.numpy as jnp
 
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
-mean = flax.jax_utils.replicate(jnp.array(MEAN_RGB, ).reshape(1, 1, 3))
-std = flax.jax_utils.replicate(jnp.array(STDDEV_RGB).reshape(1, 1, 3))
+
+mean = np.array(MEAN_RGB, ).reshape(1, 1, 3)
+std = np.array(STDDEV_RGB).reshape(1, 1, 3)
 
 
 def test(x):
@@ -36,7 +36,8 @@ def test(x):
                                                                1000).float().reshape(-1)}
 
 
-def normalize_image(image, mean, std):
+def normalize_image(image):
+    image = np.asarray(image, dtype='float32')
     # print(image)
     image -= mean
     image /= std
@@ -48,8 +49,6 @@ def normalize_image(image, mean, std):
 def prepare_torch_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
     local_device_count = jax.local_device_count()
-
-    pmap_normal = jax.pmap(normalize_image)
 
     # xs['images'] = normalize_image(xs['images'])
 
@@ -68,18 +67,14 @@ def prepare_torch_data(xs):
         # (local_devices, device_batch_size, height, width, 3)
         return x.reshape((local_device_count, -1) + x.shape[1:])
 
-    xs = jax.tree_util.tree_map(_prepare, xs)
-
-    #xs['images'] = pmap_normal(xs['images'], mean, std)
-
-    return xs
+    return jax.tree_util.tree_map(_prepare, xs)
 
 
 def create_input_pipeline(*args, **kwargs):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
-    #urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
+    # urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
 
     dataset = wds.WebDataset(
         urls=urls,
@@ -90,8 +85,9 @@ def create_input_pipeline(*args, **kwargs):
 
     while True:
         for _ in dataloader:
-            # while True:
-            #     pass
+
+
+            _['images'] = normalize_image(_['images'])
             del _['__key__']
             yield _
 
