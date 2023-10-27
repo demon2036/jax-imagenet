@@ -34,11 +34,12 @@ def test(x):
     # cls = int(x['cls'].decode('utf-8'))
     #x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
     cls=x['cls']
+
     x = np.array(x['jpg'])
     # print(x)
     x = A.HorizontalFlip()(image=x)['image']
     x = A.Resize(224, 224)(image=x)['image']
-    x= x/255.0
+    # x= x/255.0
     # x = x / 255.0
 
     return {'images': x, 'labels': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64),
@@ -81,7 +82,7 @@ def create_input_pipeline(*args, **kwargs):
 
     dataset = wds.WebDataset(
         urls=urls,
-        shardshuffle=False).mcached().decode('pil').map(test)  # .batched(1024,collation_fn=default_collate).map(temp)
+        shardshuffle=False).mcached().decode('rgb').map(test)  # .batched(1024,collation_fn=default_collate).map(temp)
 
     dataloader = DataLoader(dataset, num_workers=24, prefetch_factor=4, batch_size=1024, drop_last=True,
                             persistent_workers=True)
