@@ -26,10 +26,10 @@ std = np.array(STDDEV_RGB).reshape(1, 1, 3)
 def test(x):
     cls = int(x['cls'].decode('utf-8'))
     x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
-    x = np.array(x,dtype='float32')
+    x = np.array(x, dtype='float32')
 
     x = A.Resize(224, 224)(image=x)['image']
-    x=normalize_image(x)
+
     # x = x / 255.0
 
     return {'images': x, 'labels': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64),
@@ -49,8 +49,6 @@ def normalize_image(image):
 def prepare_torch_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
     local_device_count = jax.local_device_count()
-
-
 
     # xs['images'] = normalize_image(xs['images'])
 
@@ -87,6 +85,7 @@ def create_input_pipeline(*args, **kwargs):
 
     while True:
         for _ in dataloader:
+            _['images'] = normalize_image(_['images'])
             del _['__key__']
             yield _
 
