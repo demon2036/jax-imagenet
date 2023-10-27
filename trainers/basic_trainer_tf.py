@@ -48,7 +48,7 @@ class Trainer:
         dataset_builder = tfds.builder('imagenet2012', try_gcs=try_gcs,
                                        data_dir=data_path)  # try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets'
 
-        data_type = 'tf'
+        data_type = 'torch'
 
         if data_type == 'torch':
             ds_train = create_input_pipeline(dataset_builder, batch_size=batch_size, )
