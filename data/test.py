@@ -57,7 +57,7 @@ def test(x):
     # x= x/255.0
     # x = x / 255.0
 
-    return {'images': x, 'labels': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64),
+    return {'image': x, 'label': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64),
                                                                1000).float().reshape(-1)}
 
 
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     dl = map(prepare_torch_data, dl)
     data = next(dl)
     print(data['images'], )
-    # print(jnp.argmax(data['labels'],axis=-1))
+
     print(data['labels'].shape)
 
     images = np.asarray(data['images'])
