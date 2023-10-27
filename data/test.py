@@ -61,7 +61,7 @@ def prepare_torch_data(xs):
 
     xs = jax.tree_util.tree_map(_prepare, xs)
 
-    # xs['images'] = jax.pmap(normalize)(xs['images'])
+    xs['images'] = jax.pmap(normalize)(xs['images'])
 
     return xs
 
