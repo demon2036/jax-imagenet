@@ -19,9 +19,6 @@ import jax.numpy as jnp
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 
-mean = torch.Tensor(MEAN_RGB, ).reshape(1, 1, 3)
-std = torch.Tensor(STDDEV_RGB).reshape(1, 1, 3)
-
 
 def test(x):
     cls = int(x['cls'].decode('utf-8'))
@@ -75,6 +72,9 @@ def create_input_pipeline(*args, **kwargs):
 
     urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
 
+    mean = torch.Tensor(MEAN_RGB, ).reshape(1, 1, 3)
+    std = torch.Tensor(STDDEV_RGB).reshape(1, 1, 3)
+
     dataset = wds.WebDataset(
         urls=urls,
         shardshuffle=False).mcached().map(test)  # .batched(1024,collation_fn=default_collate).map(temp)
@@ -84,13 +84,12 @@ def create_input_pipeline(*args, **kwargs):
 
     while True:
         for _ in dataloader:
-
-
-
             # while True:
             #     pass
 
-            _['images'] = normalize_image(_['images'])
+            _['images'] -= mean
+            _['images'] /= std
+
             del _['__key__']
             yield _
 
