@@ -24,7 +24,7 @@ STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 def test(x):
     cls = int(x['cls'].decode('utf-8'))
     x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
-    x = np.array(x, dtype='float32')
+    x = np.array(x)
 
     x = A.Resize(224, 224)(image=x)['image']
 
