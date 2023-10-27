@@ -19,7 +19,8 @@ import jax.numpy as jnp
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 
-
+mean=jnp.array(MEAN_RGB).reshape(1,1,3)
+std=jnp.array(STDDEV_RGB).reshape(1,1,3)
 
 def test(x):
     cls = int(x['cls'].decode('utf-8'))
@@ -34,6 +35,12 @@ def test(x):
                                                                1000).float().reshape(-1)}
 
 
+
+
+def normalize(images):
+    images-=mean
+    images/=std
+    return images
 
 
 def prepare_torch_data(xs):
@@ -56,15 +63,17 @@ def prepare_torch_data(xs):
         # reshape (host_batch_size, height, width, 3) to
         # (local_devices, device_batch_size, height, width, 3)
         return x.reshape((local_device_count, -1) + x.shape[1:])
+    xs=jax.tree_util.tree_map(_prepare, xs)
+    xs['images']=jax.pmap(normalize)(xs['images'])
 
-    return jax.tree_util.tree_map(_prepare, xs)
+    return xs
 
 
 def create_input_pipeline(*args,**kwargs):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
-    # urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
+    #urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
 
     def temp(x):
         del x['__key__']
