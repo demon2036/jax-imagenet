@@ -45,6 +45,7 @@ def normalize(images):
 def prepare_torch_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
     local_device_count = jax.local_device_count()
+    xs['images'] = normalize(xs['images'])
 
     def _prepare(x):
         # Use _numpy() for zero-copy conversion between TF and NumPy.
@@ -54,7 +55,8 @@ def prepare_torch_data(xs):
         return x.reshape((local_device_count, -1) + x.shape[1:])
 
     xs = jax.tree_util.tree_map(_prepare, xs)
-    #xs['images'] = jax.pmap(normalize)(xs['images'])
+
+    # xs['images'] = jax.pmap(normalize)(xs['images'])
 
     return xs
 
