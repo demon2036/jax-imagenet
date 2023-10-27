@@ -19,8 +19,6 @@ import jax.numpy as jnp
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 
-mean = np.array(MEAN_RGB, ).reshape(1, 1, 3)
-std = np.array(STDDEV_RGB).reshape(1, 1, 3)
 
 
 def test(x):
@@ -36,14 +34,6 @@ def test(x):
                                                                1000).float().reshape(-1)}
 
 
-def normalize_image(image):
-    image = np.asarray(image, dtype='float32')
-    # print(image)
-    image -= mean
-    image /= std
-    # image -= tf.constant(MEAN_RGB, shape=[1, 1, 3], dtype=image.dtype)
-    # image /= tf.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=image.dtype)
-    return image
 
 
 def prepare_torch_data(xs):
@@ -85,9 +75,6 @@ def create_input_pipeline(*args, **kwargs):
 
     while True:
         for _ in dataloader:
-
-
-            _['images'] = normalize_image(_['images'])
             del _['__key__']
             yield _
 
