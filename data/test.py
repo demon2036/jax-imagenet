@@ -87,8 +87,8 @@ def create_input_pipeline(*args, **kwargs):
 
 
 
-            while True:
-                pass
+            # while True:
+            #     pass
 
             _['images'] = normalize_image(_['images'])
             del _['__key__']
