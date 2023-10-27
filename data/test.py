@@ -49,7 +49,11 @@ def prepare_torch_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
     local_device_count = jax.local_device_count()
 
-    xs['images'] = normalize_image(xs['images'])
+    xs['images'] = np.asarray(xs['images'], dtype='float32')
+    xs['images'] -= mean
+    xs['images'] /= std
+
+    # xs['images'] = normalize_image(xs['images'])
 
     # xs['images'] = xs['images'] / 255.0
 
