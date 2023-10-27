@@ -19,14 +19,15 @@ import jax.numpy as jnp
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 
-mean=jnp.array(MEAN_RGB).reshape(1,1,3)
-std=jnp.array(STDDEV_RGB).reshape(1,1,3)
+mean = jnp.array(MEAN_RGB).reshape(1, 1, 3)
+std = jnp.array(STDDEV_RGB).reshape(1, 1, 3)
+
 
 def test(x):
     cls = int(x['cls'].decode('utf-8'))
     x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
     x = np.array(x)
-
+    x = A.HorizontalFlip()(image=x)['image']
     x = A.Resize(224, 224)(image=x)['image']
 
     # x = x / 255.0
@@ -35,11 +36,9 @@ def test(x):
                                                                1000).float().reshape(-1)}
 
 
-
-
 def normalize(images):
-    images-=mean
-    images/=std
+    images -= mean
+    images /= std
     return images
 
 
@@ -63,17 +62,18 @@ def prepare_torch_data(xs):
         # reshape (host_batch_size, height, width, 3) to
         # (local_devices, device_batch_size, height, width, 3)
         return x.reshape((local_device_count, -1) + x.shape[1:])
-    xs=jax.tree_util.tree_map(_prepare, xs)
-    xs['images']=jax.pmap(normalize)(xs['images'])
+
+    xs = jax.tree_util.tree_map(_prepare, xs)
+    xs['images'] = jax.pmap(normalize)(xs['images'])
 
     return xs
 
 
-def create_input_pipeline(*args,**kwargs):
+def create_input_pipeline(*args, **kwargs):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
-    #urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
+    # urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
 
     def temp(x):
         del x['__key__']
@@ -81,12 +81,11 @@ def create_input_pipeline(*args,**kwargs):
         print(x)
         return x
 
-
     dataset = wds.WebDataset(
         urls=urls,
-        shardshuffle=False).mcached().map(test)#.batched(1024,collation_fn=default_collate).map(temp)
+        shardshuffle=False).mcached().map(test)  # .batched(1024,collation_fn=default_collate).map(temp)
 
-    dataloader = DataLoader(dataset, num_workers=64, prefetch_factor=4, batch_size=1024,  drop_last=True,
+    dataloader = DataLoader(dataset, num_workers=64, prefetch_factor=4, batch_size=1024, drop_last=True,
                             persistent_workers=True)
 
     while True:
