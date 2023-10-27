@@ -46,25 +46,15 @@ def prepare_torch_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
     local_device_count = jax.local_device_count()
 
-    # xs['images'] = normalize_image(xs['images'])
-
-    # xs['images'] = xs['images'] / 255.0
-
-    # print(xs['images'].shape)
-
     def _prepare(x):
         # Use _numpy() for zero-copy conversion between TF and NumPy.
         # x = {'img': x['img'], 'cls': x['cls']}
         x = numpy.asarray(x)
 
-        # x = x._numpy()  # pylint: disable=protected-access
-
-        # reshape (host_batch_size, height, width, 3) to
-        # (local_devices, device_batch_size, height, width, 3)
         return x.reshape((local_device_count, -1) + x.shape[1:])
 
     xs = jax.tree_util.tree_map(_prepare, xs)
-    xs['images'] = jax.pmap(normalize)(xs['images'])
+    #xs['images'] = jax.pmap(normalize)(xs['images'])
 
     return xs
 
