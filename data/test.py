@@ -41,7 +41,7 @@ def test(x):
 
     x = x['jpg']
 
-    x = np.array(x['jpg'])
+    x = np.array(x)
     # # print(x)
     x = A.HorizontalFlip()(image=x)['image']
     x = A.Resize(224, 224)(image=x)['image']
