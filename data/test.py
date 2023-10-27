@@ -19,15 +19,14 @@ import jax.numpy as jnp
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 
-
-mean=np.array(MEAN_RGB, ).reshape(1, 1, 3)
-std= np.array(STDDEV_RGB).reshape(1, 1, 3)
+mean = np.array(MEAN_RGB, ).reshape(1, 1, 3)
+std = np.array(STDDEV_RGB).reshape(1, 1, 3)
 
 
 def test(x):
     cls = int(x['cls'].decode('utf-8'))
     x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
-    x = np.array(x)
+    x = np.array(x,dtype='float32')
 
     x = A.Resize(224, 224)(image=x)['image']
     # x = x / 255.0
@@ -36,14 +35,11 @@ def test(x):
                                                                1000).float().reshape(-1)}
 
 
-
-
-
 def normalize_image(image):
     image = np.asarray(image, dtype='float32')
     # print(image)
     image -= mean
-    image /=std
+    image /= std
     # image -= tf.constant(MEAN_RGB, shape=[1, 1, 3], dtype=image.dtype)
     # image /= tf.constant(STDDEV_RGB, shape=[1, 1, 3], dtype=image.dtype)
     return image
@@ -52,7 +48,8 @@ def normalize_image(image):
 def prepare_torch_data(xs):
     """Convert a input batch from tf Tensors to numpy arrays."""
     local_device_count = jax.local_device_count()
-    #xs['images'] = normalize_image(xs['images'])
+
+    xs['images'] = normalize_image(xs['images'])
 
     # xs['images'] = xs['images'] / 255.0
 
@@ -76,7 +73,7 @@ def create_input_pipeline(*args, **kwargs):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
-    #urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
+    # urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
 
     dataset = wds.WebDataset(
         urls=urls,

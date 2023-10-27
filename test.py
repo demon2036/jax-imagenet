@@ -184,6 +184,14 @@ def attention_test(query, key, value, query_chunk_size=1):
 """
 
 if __name__ == "__main__":
+
+
+    x=89
+
+
+    print(jnp.exp(x))
+
+    """
     rng_key = jax.random.PRNGKey(42)
     shape = (3136, 2, 48)
     # x = jax.random.normal(rng_key, shape) * 2
@@ -194,6 +202,7 @@ if __name__ == "__main__":
     key_chunk_size = 2
     # print(attention(x, x, x)-dot_product_attention(x,x,x))
     print(attention(x, x, x))
+    """
     # print(my_attention(x, x, x)-attention(x, x, x))
 
     # print(jnp.arange(0, num_kv, key_chunk_size))
