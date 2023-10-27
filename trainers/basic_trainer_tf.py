@@ -5,11 +5,9 @@ from tqdm import tqdm
 # from data.datasets import create_input_pipeline
 import jax
 import tensorflow_datasets as tfds
-from data.test import create_input_pipeline,prepare_torch_data
+from data.test import create_input_pipeline, prepare_torch_data
 from input_pipeline import create_split
 from modules.utils import create_checkpoint_manager
-
-
 
 
 def prepare_tf_data(xs):
@@ -49,13 +47,22 @@ class Trainer:
         # 'gs://jtitor-eu/data/tensorflow_datasets'
         dataset_builder = tfds.builder('imagenet2012', try_gcs=try_gcs,
                                        data_dir=data_path)  # try_gcs=True,data_dir='gs://jtitor-eu/data/tensorflow_datasets'
+
+        data_type = 'tf'
+
+        if data_type == 'torch':
+            ds_train = create_input_pipeline(dataset_builder, batch_size=batch_size, )
+            self.dl = map(prepare_torch_data, ds_train)
+        else:
+            ds_train = create_split(dataset_builder, batch_size=batch_size, train=True, cache=cache, cutmix=cut_mix,
+                                    shuffle_buffer_size=shuffle_size)
+            self.dl = map(prepare_tf_data, ds_train)
+
         # ds_train = create_split(dataset_builder, batch_size=batch_size, train=True, cache=cache, cutmix=cut_mix,shuffle_buffer_size=shuffle_size)
         ds_eval = create_split(dataset_builder, batch_size=batch_size, train=False, cache=False)
 
-        ds_train = create_input_pipeline(dataset_builder, batch_size=batch_size, )
         # ds_eval = create_input_pipeline(dataset_builder, batch_size=batch_size, )
 
-        self.dl = map(prepare_torch_data, ds_train)
         self.dl = flax.jax_utils.prefetch_to_device(self.dl, 2)
         self.dl_eval = map(prepare_tf_data, ds_eval)
 
