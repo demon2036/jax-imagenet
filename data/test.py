@@ -22,6 +22,9 @@ STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 mean = jnp.array(MEAN_RGB).reshape(1, 1, 3)
 std = jnp.array(STDDEV_RGB).reshape(1, 1, 3)
 
+
+mean = np.array(MEAN_RGB).reshape(1, 1, 3)
+std = np.array(STDDEV_RGB).reshape(1, 1, 3)
 # mean = torch.Tensor(MEAN_RGB).reshape(1, 1, 3)
 # std = torch.Tensor(STDDEV_RGB).reshape(1, 1, 3)
 
