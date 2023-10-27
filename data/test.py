@@ -19,8 +19,8 @@ import jax.numpy as jnp
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 
-mean = np.array(MEAN_RGB, ).reshape(1, 1, 3)
-std = np.array(STDDEV_RGB).reshape(1, 1, 3)
+mean = torch.Tensor(MEAN_RGB, ).reshape(1, 1, 3)
+std = torch.Tensor(STDDEV_RGB).reshape(1, 1, 3)
 
 
 def test(x):
@@ -37,7 +37,6 @@ def test(x):
 
 
 def normalize_image(image):
-    image = np.asarray(image, dtype='float32')
     # print(image)
     image -= mean
     image /= std
@@ -74,7 +73,7 @@ def create_input_pipeline(*args, **kwargs):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
-    # urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
+    urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
 
     dataset = wds.WebDataset(
         urls=urls,
@@ -85,6 +84,12 @@ def create_input_pipeline(*args, **kwargs):
 
     while True:
         for _ in dataloader:
+
+
+
+            while True:
+                pass
+
             _['images'] = normalize_image(_['images'])
             del _['__key__']
             yield _
