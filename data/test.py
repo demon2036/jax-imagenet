@@ -30,11 +30,15 @@ std = jnp.array(STDDEV_RGB,dtype=np.float32).reshape(1, 1, 3)
 
 
 def test(x):
-    cls = int(x['cls'].decode('utf-8'))
-    x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
-    x = np.array(x)
+    # print(x['cls'])
+    # cls = int(x['cls'].decode('utf-8'))
+    #x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
+    cls=x['cls']
+    x = np.array(x['jpg'])
+    # print(x)
     x = A.HorizontalFlip()(image=x)['image']
     x = A.Resize(224, 224)(image=x)['image']
+    x= x/255.0
     # x = x / 255.0
 
     return {'images': x, 'labels': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64),
@@ -63,7 +67,7 @@ def prepare_torch_data(xs):
 
     xs = jax.tree_util.tree_map(_prepare, xs)
 
-    xs['images'] = jax.pmap(normalize)(xs['images'])
+    # xs['images'] = jax.pmap(normalize)(xs['images'])
 
     return xs
 
@@ -72,12 +76,12 @@ def create_input_pipeline(*args, **kwargs):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
-    # urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
+    urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
 
 
     dataset = wds.WebDataset(
         urls=urls,
-        shardshuffle=False).mcached().map(test)  # .batched(1024,collation_fn=default_collate).map(temp)
+        shardshuffle=False).mcached().decode('pil').map(test)  # .batched(1024,collation_fn=default_collate).map(temp)
 
     dataloader = DataLoader(dataset, num_workers=24, prefetch_factor=4, batch_size=1024, drop_last=True,
                             persistent_workers=True)
