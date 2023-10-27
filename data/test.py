@@ -23,8 +23,8 @@ mean = jnp.array(MEAN_RGB).reshape(1, 1, 3)
 std = jnp.array(STDDEV_RGB).reshape(1, 1, 3)
 
 
-mean = np.array(MEAN_RGB).reshape(1, 1, 3)
-std = np.array(STDDEV_RGB).reshape(1, 1, 3)
+mean = np.array(MEAN_RGB,dtype=np.float32).reshape(1, 1, 3)
+std = np.array(STDDEV_RGB,dtype=np.float32).reshape(1, 1, 3)
 # mean = torch.Tensor(MEAN_RGB).reshape(1, 1, 3)
 # std = torch.Tensor(STDDEV_RGB).reshape(1, 1, 3)
 
@@ -35,6 +35,7 @@ def test(x):
     x = np.array(x)
     x = A.HorizontalFlip()(image=x)['image']
     x = A.Resize(224, 224)(image=x)['image']
+    x=np.asarray(x,dtype=np.float32)
     x=normalize(x)
     # x = x / 255.0
 
