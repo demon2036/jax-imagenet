@@ -41,19 +41,10 @@ def test(x):
 
     x = x['jpg']
 
-    transform = torchvision.transforms.Compose([
-        torchvision.transforms.Resize((224, 224)),
-        torchvision.transforms.RandomHorizontalFlip(),
-        torchvision.transforms.Normalize(mean=MEAN_RGB, std=STDDEV_RGB)
-
-    ])
-    x = transform(x)
-    x = einops.rearrange(x, 'c h w ->h w c')
-
-    # x = np.array(x['jpg'])
+    x = np.array(x['jpg'])
     # # print(x)
-    # x = A.HorizontalFlip()(image=x)['image']
-    # x = A.Resize(224, 224)(image=x)['image']
+    x = A.HorizontalFlip()(image=x)['image']
+    x = A.Resize(224, 224)(image=x)['image']
     # x= x/255.0
     # x = x / 255.0
 
@@ -75,14 +66,13 @@ def prepare_torch_data(xs):
 
     def _prepare(x):
         # Use _numpy() for zero-copy conversion between TF and NumPy.
-        # x = {'img': x['img'], 'cls': x['cls']}
-        x = numpy.asarray(x, dtype=np.float32)
+        x = numpy.asarray(x)
 
         return x.reshape((local_device_count, -1) + x.shape[1:])
 
     xs = jax.tree_util.tree_map(_prepare, xs)
 
-    # xs['images'] = jax.pmap(normalize)(xs['images'])
+    xs['image'] = jax.pmap(normalize)(xs['image'])
 
     return xs
 
