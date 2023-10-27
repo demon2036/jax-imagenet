@@ -23,6 +23,10 @@ mean = jnp.array(MEAN_RGB).reshape(1, 1, 3)
 std = jnp.array(STDDEV_RGB).reshape(1, 1, 3)
 
 
+mean = torch.Tensor(MEAN_RGB).reshape(1, 1, 3)
+std = torch.Tensor(STDDEV_RGB).reshape(1, 1, 3)
+
+
 def test(x):
     cls = int(x['cls'].decode('utf-8'))
     x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
