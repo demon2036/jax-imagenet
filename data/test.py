@@ -8,7 +8,7 @@ import torch
 import torchvision.transforms
 import webdataset
 import webdataset as wds
-
+from timm.data import RandAugment, create_transform
 from torch.utils.data._utils.collate import default_collate
 from tqdm import tqdm
 from torch.utils.data import DataLoader, Dataset
@@ -38,19 +38,19 @@ def test(x):
     # cls = int(x['cls'].decode('utf-8'))
     # x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
     cls = x['cls']
-
+    cls=torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64),
+                                                             1000).float().reshape(-1)
     x = x['jpg']
 
     x = np.asarray(x)
-
-    # # print(x)
     x = A.HorizontalFlip()(image=x)['image']
-    x = A.Resize(224, 224)(image=x)['image']
+    x = A.Resize(256, 256)(image=x)['image']
+    x = A.RandomCrop(224, 224)(image=x)['image']
+
     # x= x/255.0
     # x = x / 255.0
 
-    return {'image': x, 'label': torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64),
-                                                             1000).float().reshape(-1)}
+    return {'image': x, 'label': cls}
 
 
 def normalize(images):
