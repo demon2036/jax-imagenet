@@ -22,7 +22,6 @@ STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 mean = jnp.array(MEAN_RGB).reshape(1, 1, 3)
 std = jnp.array(STDDEV_RGB).reshape(1, 1, 3)
 
-
 mean = torch.Tensor(MEAN_RGB).reshape(1, 1, 3)
 std = torch.Tensor(STDDEV_RGB).reshape(1, 1, 3)
 
@@ -41,6 +40,8 @@ def test(x):
 
 
 def normalize(images):
+    images = images.float()
+    # print(images.dtype)
     images -= mean
     images /= std
     return images
@@ -69,7 +70,7 @@ def create_input_pipeline(*args, **kwargs):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar '
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
-    # urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
+    urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
 
     def temp(x):
         del x['__key__']
