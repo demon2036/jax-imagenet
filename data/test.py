@@ -6,7 +6,7 @@ import numpy
 import numpy as np
 import torch
 
-from torch.nn.functional import  scaled_dot_product_attention
+from torch.nn.functional import scaled_dot_product_attention
 import torchvision.transforms
 import webdataset
 import webdataset as wds
@@ -40,14 +40,14 @@ def test(x):
     # cls = int(x['cls'].decode('utf-8'))
     # x = Image.open(io.BytesIO(x['jpg'])).convert('RGB')
     cls = x['cls']
-    cls=torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64),
-                                                             1000).float().reshape(-1)
+    cls = torch.nn.functional.one_hot(torch.Tensor(np.array(cls).reshape(-1)).to(torch.int64),
+                                      1000).float().reshape(-1)
     x = x['jpg']
 
-    x = np.asarray(x)
-    x = A.HorizontalFlip()(image=x)['image']
-    x = A.Resize(256, 256)(image=x)['image']
+    x = np.array(x)
+    x = A.OneOf([A.Resize(256, 256), A.Resize(480, 480)],p=1)(image=x)['image']
     x = A.RandomCrop(224, 224)(image=x)['image']
+    x = A.HorizontalFlip()(image=x)['image']
 
     # x= x/255.0
     # x = x / 255.0
@@ -84,7 +84,7 @@ def create_input_pipeline(*args, **kwargs):
     urls = 'pipe:gcloud alpha storage cat gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
     # urls = 'gs://luck-eu/data/imagenet_train_shards/imagenet_train_shards-{00000..00073}.tar '
 
-    #urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
+    # urls = 'pipe: cat /home/john/data/imagenet_train_shards/imagenet_train_shards-{00073..00073}.tar'
 
     dataset = wds.WebDataset(
         urls=urls,
