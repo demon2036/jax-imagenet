@@ -5,6 +5,8 @@ import einops
 import numpy
 import numpy as np
 import torch
+
+from torch.nn.functional import  scaled_dot_product_attention
 import torchvision.transforms
 import webdataset
 import webdataset as wds
@@ -86,7 +88,7 @@ def create_input_pipeline(*args, **kwargs):
 
     dataset = wds.WebDataset(
         urls=urls,
-        shardshuffle=True).mcached().shuffle(2000).decode('pil').map(
+        shardshuffle=True).mcached().shuffle(20000).decode('pil').map(
         test)  # .batched(1024,collation_fn=default_collate).map(temp)
 
     dataloader = DataLoader(dataset, num_workers=48, prefetch_factor=2, batch_size=1024, drop_last=True,

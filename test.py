@@ -88,11 +88,11 @@ def attention(query, key, value, precision=jax.lax.Precision.HIGHEST,
     num_q, num_heads, q_features = query.shape
 
     def chunk_scanner(chunk_idx, _):
-        size = jax.lax.cond(num_q - chunk_idx > query_chunk_size, lambda : query_chunk_size,
-                            lambda : num_q - chunk_idx)
+        size = jax.lax.cond(num_q - chunk_idx > query_chunk_size, lambda: query_chunk_size,
+                            lambda: num_q - chunk_idx)
 
         query_chunk = lax.dynamic_slice(query, (chunk_idx, 0, 0),
-            slice_sizes=(size, num_heads, q_features))
+                                        slice_sizes=(size, num_heads, q_features))
         print(query_chunk.shape)
         return (chunk_idx + query_chunk_size, _query_chunk_attention(query_chunk, key, value, precision=precision))
 
@@ -184,16 +184,16 @@ def attention_test(query, key, value, query_chunk_size=1):
 """
 
 if __name__ == "__main__":
+    from jax.experimental.pallas.ops.attention import mha
+    from flax.linen.attention import dot_product_attention
+    import jax.experimental.pallas as pl
 
+    # mha()
 
-    x=89
+    print(jax.default_backend())
 
-
-    print(jnp.exp(x))
-
-    """
     rng_key = jax.random.PRNGKey(42)
-    shape = (3136, 2, 48)
+    shape = (1, 8192*4, 64, 64)
     # x = jax.random.normal(rng_key, shape) * 2
     x = jnp.ones(shape)
     # x=jnp.array([[[1,10,100],[1,20,200]]])
@@ -201,8 +201,27 @@ if __name__ == "__main__":
     num_kv = 13
     key_chunk_size = 2
     # print(attention(x, x, x)-dot_product_attention(x,x,x))
-    print(attention(x, x, x))
-    """
+    import einops
+
+    x = einops.rearrange(x, 'b n h d->b h n d')
+
+    x = dot_product_attention(x, x, x)
+    x = mha(x, x, x, segment_ids=None)
+    start = time.time()
+    for i in range(100):
+        x = dot_product_attention(x, x, x)
+    end = time.time()
+    print(end - start)
+
+    start = time.time()
+    for i in range(100):
+        x = mha(x, x, x, segment_ids=None)
+    end = time.time()
+    print(end - start)
+
+    # print(mha(x, x, x, segment_ids=None))
+    """"""
+    """"""
     # print(my_attention(x, x, x)-attention(x, x, x))
 
     # print(jnp.arange(0, num_kv, key_chunk_size))
