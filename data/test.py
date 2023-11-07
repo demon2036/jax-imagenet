@@ -45,7 +45,7 @@ def test(x):
     x = x['jpg']
 
     x = np.asarray(x)
-    x = A.OneOf([A.Resize(256, 256), A.Resize(480, 480)],p=1)(image=x)['image']
+    x = A.OneOf([A.Resize(256, 256), ],p=1)(image=x)['image']#A.Resize(480, 480)
     x = A.RandomCrop(224, 224)(image=x)['image']
     x = A.HorizontalFlip()(image=x)['image']
 
