@@ -1,6 +1,7 @@
 import io
 import os
 
+import cv2
 import einops
 import numpy
 import numpy as np
@@ -45,7 +46,7 @@ def test(x):
     x = x['jpg']
 
     x = np.asarray(x)
-    x = A.OneOf([A.Resize(256, 256), ],p=1)(image=x)['image']#A.Resize(480, 480)
+    x = A.OneOf([A.Resize(256, 256,interpolation=cv2.INTER_AREA), ],p=1)(image=x)['image']#A.Resize(480, 480)
     x = A.RandomCrop(224, 224)(image=x)['image']
     x = A.HorizontalFlip()(image=x)['image']
 
