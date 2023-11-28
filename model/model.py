@@ -5,6 +5,9 @@ import jax.numpy as jnp
 import flax.linen as nn
 
 
+from diffusers import UNet2DModel
+
+
 class ConvBlock(nn.Module):
     out_channels: int
     kernel_size: int

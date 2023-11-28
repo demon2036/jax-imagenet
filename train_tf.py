@@ -48,6 +48,7 @@ if __name__ == "__main__":
     #         batch = next(trainer.dl)
     #         print(batch['labels'].dtype)
 
+    # trainer.test()
 
     trainer.load()
     # trainer.state = flax.jax_utils.replicate(trainer.state)
