@@ -31,25 +31,6 @@ def get_posemb(self, typ, seqshape, width, name, dtype=jnp.float32):
         raise ValueError(f"Unknown posemb type: {typ}")
 
 
-class MultiHeadAttention(nn.Module):
-    dim: int
-    heads: int
-    dtype: Any = jnp.bfloat16
-
-    @nn.compact
-    def __call__(self, x, *args, **kwargs):
-        b, *_ = x.shape
-
-        x = nn.Dense(3 * self.dim, dtype=self.dtype, use_bias=False)(x)
-        q, k, v = tuple(einops.rearrange(x, 'b t (d k h) -> k b h t d ', k=3, h=self.heads))
-        # q = nn.LayerNorm()(q)
-        # k = nn.LayerNorm()(k)
-        scaled_dot_prod = jnp.einsum('b h i d , b h j d -> b h i j', q, k) * q.shape[-1] ** -0.5
-        attn = nn.softmax(scaled_dot_prod, axis=-1)
-        out = jnp.einsum('b h i j , b  h j d -> b h i d', attn, v)
-        out = einops.rearrange(out, 'b h i d-> b i ( h d)')
-        out = nn.Dense(self.dim, dtype=self.dtype)(out)
-        return out
 
 
 class MLP(nn.Module):
@@ -78,11 +59,16 @@ class Block(nn.Module):
         x = nn.Dense(2 * self.dim, dtype=self.dtype, use_bias=False)(x)
         q, k = tuple(einops.rearrange(x, 'b t (d k h) -> k b h t d ', k=2, h=self.nums_head))
 
-        v=MLP(dim=self.dim,dtype=self.dtype)(x)
+        v = MLP(dim=self.dim, dtype=self.dtype)(x)
         # q = nn.LayerNorm()(q)
         # k = nn.LayerNorm()(k)
         scaled_dot_prod = jnp.einsum('b h i d , b h j d -> b h i j', q, k) * q.shape[-1] ** -0.5
         attn = nn.softmax(scaled_dot_prod, axis=-1)
+
+
+        print(attn)
+        print(v)
+
         out = jnp.einsum('b h i j , b  h j d -> b h i d', attn, v)
         out = einops.rearrange(out, 'b h i d-> b i ( h d)')
         return out
