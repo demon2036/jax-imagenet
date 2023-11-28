@@ -60,6 +60,7 @@ class Block(nn.Module):
         q, k = tuple(einops.rearrange(x, 'b t (d k h) -> k b h t d ', k=2, h=self.nums_head))
 
         v = MLP(dim=self.dim, dtype=self.dtype)(x)
+        v=einops.rearrange(v,'b t (d h)-> b h t d')
         # q = nn.LayerNorm()(q)
         # k = nn.LayerNorm()(k)
         scaled_dot_prod = jnp.einsum('b h i d , b h j d -> b h i j', q, k) * q.shape[-1] ** -0.5
