@@ -2,7 +2,7 @@
 image_size: 224
 batch_size: 1024
 shuffle_size: 200000
-data_path: 'gs://jtitor-eu/data/tensorflow_datasets'
+data_path: 'gs://luck-eu/data/tensorflow_datasets'
 seed: 43
 total_epoch: 90
 warmup_epoch: 5
