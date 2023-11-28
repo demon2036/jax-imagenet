@@ -67,8 +67,8 @@ class Block(nn.Module):
         attn = nn.softmax(scaled_dot_prod, axis=-1)
 
 
-        print(attn)
-        print(v)
+        print(attn.shape)
+        print(v.shape)
 
         out = jnp.einsum('b h i j , b  h j d -> b h i d', attn, v)
         out = einops.rearrange(out, 'b h i d-> b i ( h d)')
