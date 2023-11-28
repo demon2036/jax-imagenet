@@ -76,7 +76,7 @@ class Block(nn.Module):
         b, *_ = x.shape
 
         x = nn.Dense(2 * self.dim, dtype=self.dtype, use_bias=False)(x)
-        q, k = tuple(einops.rearrange(x, 'b t (d k h) -> k b h t d ', k=3, h=self.heads))
+        q, k = tuple(einops.rearrange(x, 'b t (d k h) -> k b h t d ', k=2, h=self.heads))
 
         v=MLP(dim=self.dim,dtype=self.dtype)
         # q = nn.LayerNorm()(q)
