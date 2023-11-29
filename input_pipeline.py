@@ -394,7 +394,7 @@ def create_split(
 
         else:
             image = preprocess_for_eval(example['image'], dtype, image_size)
-            example['label'] = tf.one_hot(example['label'], 1000)
+            example['label'] = tf.one_hot(example['labels'], 1000)
         return {'image': image, 'label': example['label']}
 
     ds = dataset_builder.as_dataset(
