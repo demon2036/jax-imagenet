@@ -137,8 +137,8 @@ def train_step(state, batch):
 def train_step(state: MyTrainState, batch):
     def loss_fn(params):
         variable = {'params': params, 'batch_stats': state.batch_stats}
-        logits, new_model_state = state.apply_fn(variable, batch['image'], mutable=['batch_stats'])
-        loss = cross_entropy_loss(logits, batch['label'])
+        logits, new_model_state = state.apply_fn(variable, batch['images'], mutable=['batch_stats'])
+        loss = cross_entropy_loss(logits, batch['labels'])
         # weight_penalty_params = jax.tree_util.tree_leaves(params)
         # weight_decay = 0.0001
         # weight_l2 = sum(
@@ -170,8 +170,8 @@ def train_step_without_bn(state: MyTrainState, batch, key):
     def loss_fn(params):
         variables = {'params': params, }
 
-        logits = state.apply_fn(variables, batch['image'], rngs={'dropout': key})
-        loss = cross_entropy_loss(logits, batch['label'])
+        logits = state.apply_fn(variables, batch['images'], rngs={'dropout': key})
+        loss = cross_entropy_loss(logits, batch['labels'])
         # weight_penalty_params = jax.tree_util.tree_leaves(params)
         # weight_decay = 0.0001
         # weight_l2 = sum(
