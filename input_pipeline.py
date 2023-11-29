@@ -395,7 +395,7 @@ def create_split(
         else:
             image = preprocess_for_eval(example['image'], dtype, image_size)
             example['label'] = tf.one_hot(example['label'], 1000)
-        return {'images': image, 'labels': example['label']}
+        return {'image': image, 'labels': example['label']}
 
     ds = dataset_builder.as_dataset(
         split=split,
@@ -425,7 +425,7 @@ def create_split(
                                                               mixup_alpha=0.8)
 
     def cut_mix_and_mix_up(samples):
-        samples['image'], samples['labels'] = cut_mix(samples['images'], samples['labels'])
+        samples['image'], samples['labels'] = cut_mix(samples['image'], samples['labels'])
         return samples
 
     if train and cutmix:
