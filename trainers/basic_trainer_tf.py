@@ -54,7 +54,7 @@ class Trainer:
             ds_train = create_input_pipeline(dataset_builder, batch_size=batch_size, )
             self.dl = map(prepare_torch_data, ds_train)
         else:
-            ds_train = create_split(dataset_builder, batch_size=batch_size, train=True, cache=cache, #cutmix=cut_mix,
+            ds_train = create_split(dataset_builder, batch_size=batch_size, train=True, cache=cache, cutmix=cut_mix,
                                     shuffle_buffer_size=shuffle_size)
             self.dl = map(prepare_tf_data, ds_train)
 
