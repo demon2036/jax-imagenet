@@ -425,7 +425,7 @@ def create_split(
                                                               mixup_alpha=0.8)
 
     def cut_mix_and_mix_up(samples):
-        samples['images'], samples['labels'] = cut_mix(samples['images'], samples['labels'])
+        samples['image'], samples['labels'] = cut_mix(samples['images'], samples['labels'])
         return samples
 
     if train and cutmix:
