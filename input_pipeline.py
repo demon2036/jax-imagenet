@@ -298,7 +298,7 @@ def preprocess_for_eval(image_bytes, dtype=tf.float32, image_size=IMAGE_SIZE):
 
 
 def one_hot(sample):
-    sample['labels'] = tf.one_hot(tf.cast(sample['labels'], tf.int32), 1000)
+    sample['label'] = tf.one_hot(tf.cast(sample['label'], tf.int32), 1000)
     return sample
 
 
