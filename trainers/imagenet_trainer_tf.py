@@ -155,7 +155,7 @@ def train_step(state: MyTrainState, batch):
     # Re-use same axis_name as in the call to `pmap(...train_step...)` below.
     grads = jax.lax.pmean(grads, axis_name='batch')
     new_model_state, logits = aux[1]
-    metrics = compute_metrics(logits, batch['label'])
+    metrics = compute_metrics(logits, batch['labels'])
     new_state = state.apply_gradients(
         grads=grads, batch_stats=new_model_state['batch_stats'] if 'batch_stats' in new_model_state else None
     )
@@ -188,7 +188,7 @@ def train_step_without_bn(state: MyTrainState, batch, key):
     grads = jax.lax.pmean(grads, axis_name='batch')
     logits = aux[1]
 
-    metrics = compute_metrics(logits, batch['label'])
+    metrics = compute_metrics(logits, batch['labels'])
     new_state = state.apply_gradients(
         grads=grads,
     )
